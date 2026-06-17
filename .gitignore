@@ -1,0 +1,7 @@
+.env
+node_modules/
+Pages/store-app/node_modules/
+Pages/store-app/dist/
+Pages/store-app/tsconfig.app.tsbuildinfo
+Pages/d0909d76-bd7a-4584-853c-aa432788b223/
+.claude/skills/ui-ux-pro-max/scripts/__pycache__/

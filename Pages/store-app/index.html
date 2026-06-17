@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+/* __STORE_KEYS_START__ */window.__STORE_KEYS__={"77700b5d13c9badd0025648a":"fb0f366100cccbb88f2142a3be52eed28f52d11aa4827c1fc7205965d7ac4fe1fd0d3d62"}/* __STORE_KEYS_END__ */;
+/* __STORE_SECRET_START__ */var __SK='9f3f0f5139a8fc8ea2432694df7fdae7b766fc2291b11f32a6416d56e59b77d9'/* __STORE_SECRET_END__ */;
+(function(){function xd(h,k){var a=k.match(/.{2}/g).map(function(x){return parseInt(x,16)});return h.match(/.{2}/g).map(function(x,i){return (parseInt(x,16)^a[i%a.length])&0xFF}).map(function(c){return String.fromCharCode(c)}).join('')}var p=new URLSearchParams(location.search),s=p.get('store');if(!s)return;/* Public store key (etalase_pk_*) — use directly, no decryption needed */if(/^etalase_pk_/.test(s)){window.__RESOLVED_STORE_KEY__=s;return;}/* Legacy UUID — use directly */var UUID=/^[0-9a-f]{8}-/i;if(UUID.test(s)){window.__RESOLVED_STORE_ID__=s;return;}/* Legacy token → decrypt to UUID */var enc=window.__STORE_KEYS__[s];if(enc)window.__RESOLVED_STORE_ID__=xd(enc,__SK);}());
+</script>
+    <script>
+(function () {
+  if (window.__etEditor) return;
+  window.__etEditor = true;
+  var params = new URLSearchParams(location.search);
+  var storeId = window.__RESOLVED_STORE_ID__ || params.get('store');
+  if (!storeId) return;
+
+  var KEY       = 'etalase-text-overrides-'  + storeId;
+  var COLOR_KEY = 'etalase-color-overrides-' + storeId;
+
+  /* ── localStorage (draft) ── */
+  var _localText = {}, _localColors = {};
+  try { _localText  = JSON.parse(localStorage.getItem(KEY)       || '{}'); } catch (e) {}
+  try { _localColors = JSON.parse(localStorage.getItem(COLOR_KEY) || '{}'); } catch (e) {}
+
+  /* merged = published file (base) + localStorage draft (on top) */
+  var overrides      = Object.assign({}, _localText);
+  var colorOverrides = Object.assign({}, _localColors);
+
+  /* ── Apply color CSS variables ── */
+  function applyColors(vars) {
+    var el = document.getElementById('__et-colors');
+    if (!el) { el = document.createElement('style'); el.id = '__et-colors'; document.head.appendChild(el); }
+    var entries = Object.keys(vars).filter(function(k){ return k.startsWith('--'); });
+    if (!entries.length) { el.textContent = ''; return; }
+    el.textContent = ':root{' + entries.map(function(k){ return k+':'+vars[k]; }).join(';') + '}';
+  }
+  /* Apply local colors immediately (no fetch delay) */
+  if (Object.keys(colorOverrides).length) applyColors(colorOverrides);
+
+  /* ── Fetch published overrides file, merge ── */
+  fetch('./overrides/' + storeId + '.json')
+    .then(function(r) { return r.ok ? r.json() : {}; })
+    .then(function(data) {
+      /* file is base; local draft wins on conflict */
+      overrides      = Object.assign({}, data.text   || {}, _localText);
+      colorOverrides = Object.assign({}, data.colors || {}, _localColors);
+      if (Object.keys(colorOverrides).length) applyColors(colorOverrides);
+      /* re-apply text if instrument() already ran */
+      if (Object.keys(els).length) instrument();
+    })
+    .catch(function() { /* keep localStorage-only state */ });
+
+  /* ── Text click-to-edit ── */
+  var sEl = document.createElement('style');
+  sEl.textContent = '[data-eid]:hover{outline:2px dashed rgba(59,130,246,.75)!important;outline-offset:3px!important;cursor:pointer!important}[data-eid].eid-on{outline:2px solid #3B82F6!important;outline-offset:3px!important;background:rgba(59,130,246,.06)!important}';
+  document.head.appendChild(sEl);
+
+  var els = {}, tagCount = {};
+
+  function instrument() {
+    document.querySelectorAll('[data-eid]').forEach(function (n) { n.removeAttribute('data-eid'); n.classList.remove('eid-on'); });
+    els = {}; tagCount = {};
+    var TAGS = ['h1','h2','h3','h4','h5','h6','p','button','a','span','li','td','label','strong','em'];
+    TAGS.forEach(function (tag) {
+      document.querySelectorAll(tag).forEach(function (el) {
+        var txt = el.textContent.trim();
+        if (!txt || txt.length < 2) return;
+        if (el.closest('script,style,noscript,code,pre,svg,[data-no-edit]')) return;
+        if (el.querySelectorAll('img,video,canvas,iframe').length) return;
+        tagCount[tag] = tagCount[tag] || 0;
+        var eid = tag + '-' + (tagCount[tag]++);
+        el.setAttribute('data-eid', eid);
+        els[eid] = { el: el, orig: txt };
+        el.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation();
+          document.querySelectorAll('.eid-on').forEach(function (x) { x.classList.remove('eid-on'); });
+          el.classList.add('eid-on');
+          window.parent.postMessage({ type: '__EC', eid: eid, tag: tag, text: el.textContent.trim() }, '*');
+        }, true);
+      });
+    });
+    Object.keys(overrides).forEach(function (eid) {
+      if (els[eid] && overrides[eid].newText !== undefined) els[eid].el.textContent = overrides[eid].newText;
+    });
+  }
+
+  window.addEventListener('message', function (e) {
+    if (!e.data || !e.data.type) return;
+    var entry;
+    if (e.data.type === '__EU') {
+      entry = els[e.data.eid]; if (!entry) return;
+      entry.el.textContent = e.data.text;
+      overrides[e.data.eid] = { newText: e.data.text, originalText: entry.orig, tag: e.data.tag };
+      try { localStorage.setItem(KEY, JSON.stringify(overrides)); } catch (_) {}
+    } else if (e.data.type === '__ER') {
+      entry = els[e.data.eid]; if (!entry) return;
+      entry.el.textContent = entry.orig;
+      delete overrides[e.data.eid];
+      try { localStorage.setItem(KEY, JSON.stringify(overrides)); } catch (_) {}
+    } else if (e.data.type === '__ECALL') {
+      Object.keys(els).forEach(function (id) { els[id].el.textContent = els[id].orig; });
+      overrides = {};
+      try { localStorage.removeItem(KEY); } catch (_) {}
+    } else if (e.data.type === '__ECOLOR') {
+      colorOverrides = e.data.vars || {};
+      applyColors(colorOverrides);
+      if (Object.keys(colorOverrides).length) {
+        try { localStorage.setItem(COLOR_KEY, JSON.stringify(colorOverrides)); } catch (_) {}
+      } else {
+        try { localStorage.removeItem(COLOR_KEY); } catch (_) {}
+      }
+    }
+  });
+
+  var iTimer;
+  var obs = new MutationObserver(function () { clearTimeout(iTimer); iTimer = setTimeout(instrument, 300); });
+  function start() { obs.observe(document.body, { childList: true, subtree: true }); setTimeout(instrument, 700); }
+  if (document.body) { start(); } else { document.addEventListener('DOMContentLoaded', start); }
+})();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "etalase-builder",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "add-store": "node add-store.js",
+    "deploy:prepare": "node deploy-prepare.js",
+    "build:store": "npm run build --prefix Pages/store-app",
+    "dev:store": "npm run dev --prefix Pages/store-app"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0"
+  }
+}
