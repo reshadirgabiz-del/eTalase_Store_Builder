@@ -8,9 +8,8 @@ export class SupabaseService implements OnModuleInit {
   client: SupabaseClient;
 
   onModuleInit() {
-
-    const url = "https://rjooyyopugjwqwceigwo.supabase.co";
-    const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqb295eW9wdWdqd3F3Y2VpZ3dvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTIwNjM5MywiZXhwIjoyMDk0NzgyMzkzfQ.Wk0ENVeM1d8nreGpATbukF4chufF2gZvgchGvBNB1fc";
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in .env');
     this.client = createClient(url, key);
   }
