@@ -20,7 +20,10 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import etalaseLogo from "../../assets/logo.png";
-import type { ColorScheme } from "@/lib/templates";
+import type { ColorScheme, TemplateId } from "@/lib/templates";
+import { StorefrontBauhausTemplate } from "./storefront-bauhaus-template";
+import { StorefrontPastelTemplate } from "./storefront-pastel-template";
+import { StorefrontCyberTemplate } from "./storefront-cyber-template";
 
 export type SectionId = "hero" | "categories" | "catalogue" | "footer";
 export type PreviewPage = "home" | "catalogue" | "product";
@@ -63,7 +66,43 @@ export type Product = {
   images?: ProductImage[];
 };
 
-type SectionText = { title: string; body: string; eyebrow?: string };
+export type ProductTextOverride = {
+  name?: string;
+  subtitle?: string;
+  description?: string;
+};
+
+export type ProductTextOverrides = Record<string, ProductTextOverride>;
+
+type SectionText = {
+  [key: string]: string | undefined;
+  storeName?: string;
+  title: string;
+  body: string;
+  eyebrow?: string;
+  ctaLabel?: string;
+  navHome?: string;
+  navCatalogue?: string;
+  cartLabel?: string;
+  allLabel?: string;
+  viewAllLabel?: string;
+  backLabel?: string;
+  quantityLabel?: string;
+  addToCartLabel?: string;
+  soldOutLabel?: string;
+  productCountSuffix?: string;
+  productFallback?: string;
+  cartTitle?: string;
+  itemLabel?: string;
+  lineQuantityLabel?: string;
+  totalLabel?: string;
+  checkoutLabel?: string;
+  cartEmptyTitle?: string;
+  cartEmptyBody?: string;
+  confirmTitle?: string;
+  confirmBody?: string;
+  confirmButton?: string;
+};
 export type TextField = keyof SectionText;
 
 export type TextConfig = Record<SectionId, SectionText>;
@@ -91,14 +130,36 @@ export const INITIAL_TEXT: TextConfig = {
     eyebrow: "Storefront unggulan",
     title: "Temukan pilihan favorit Anda berikutnya",
     body: "Belanja produk terbaru dari toko eTalase ini, dengan data katalog aktif dan storefront yang siap checkout.",
+    ctaLabel: "Lihat katalog",
+    navHome: "Beranda",
+    navCatalogue: "Katalog",
+    cartLabel: "Keranjang",
   },
   categories: {
     title: "Belanja berdasarkan kategori",
     body: "Jelajahi koleksi pilihan dari toko kami.",
+    productCountSuffix: "produk",
   },
   catalogue: {
     title: "Lihat katalog",
     body: "Lihat semua produk dalam koleksi kami dan filter berdasarkan kategori.",
+    allLabel: "Semua",
+    viewAllLabel: "Lihat semua katalog",
+    backLabel: "Kembali ke katalog",
+    quantityLabel: "Jumlah",
+    addToCartLabel: "Tambah ke keranjang",
+    soldOutLabel: "Stok habis",
+    productFallback: "Produk eTalase.",
+    lineQuantityLabel: "Jumlah",
+    totalLabel: "Total",
+    checkoutLabel: "Checkout",
+    cartTitle: "Keranjang",
+    itemLabel: "item",
+    cartEmptyTitle: "Keranjang Anda kosong",
+    cartEmptyBody: "Tambahkan produk untuk meninjaunya di sini.",
+    confirmTitle: "Mengalihkan ke e-talase",
+    confirmBody: "Anda akan diarahkan ke halaman e-talase untuk menyelesaikan checkout.",
+    confirmButton: "Oke",
   },
   footer: {
     title: "Jelajahi katalog",
@@ -370,6 +431,7 @@ export function EditableText({
       spellCheck={false}
       role="textbox"
       tabIndex={0}
+      onPointerDown={(event: React.PointerEvent) => event.stopPropagation()}
       onClick={(event: React.MouseEvent) => event.stopPropagation()}
       onKeyDown={(event: React.KeyboardEvent<HTMLElement>) => {
         if (!multiline && event.key === "Enter") {
@@ -696,12 +758,71 @@ function FooterBlock({
   );
 }
 
+export const TEMPLATES_WITH_STATIC_HERO: TemplateId[] = ["storefront-modern", "storefront-bauhaus", "storefront-cyber"];
+
+export function templateSupportsHeroImage(templateId: TemplateId | undefined) {
+  if (!templateId) return false;
+  return TEMPLATES_WITH_STATIC_HERO.includes(templateId);
+}
+
+export function StorefrontSkeleton({
+  wrapperClass = "storefront-page",
+  cardCount = 8,
+  showHero = true,
+}: {
+  wrapperClass?: string;
+  cardCount?: number;
+  showHero?: boolean;
+}) {
+  const cards = Array.from({ length: cardCount });
+  return (
+    <div className={`${wrapperClass} storefront-skeleton`} aria-busy="true" aria-live="polite">
+      <div className="skel-header">
+        <span className="skel-line" style={{ width: 140, height: 20 }} />
+        <span className="skel-line" style={{ width: 220, height: 16 }} />
+        <span className="skel-line" style={{ width: 110, height: 32, borderRadius: 8 }} />
+      </div>
+      {showHero ? (
+        <div className="skel-hero">
+          <div className="skel-hero-copy">
+            <span className="skel-line" style={{ width: 110, height: 14, borderRadius: 999 }} />
+            <span className="skel-line xl w-70" />
+            <span className="skel-line xl w-50" />
+            <span className="skel-line w-90" />
+            <span className="skel-line w-70" />
+            <span className="skel-line" style={{ width: 160, height: 38, borderRadius: 8, marginTop: 18 }} />
+          </div>
+          <div className="skel-hero-art skel-block" />
+        </div>
+      ) : null}
+      <div className="skel-section">
+        <span className="skel-line lg w-30" />
+        <span className="skel-line w-50" />
+      </div>
+      <div className="skel-grid">
+        {cards.map((_, index) => (
+          <div className="skel-card" key={index}>
+            <div className="skel-card-image skel-block" />
+            <div className="skel-card-body">
+              <span className="skel-line w-90" />
+              <span className="skel-line w-70" />
+              <span className="skel-line w-50" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function StorefrontPreview({
+  templateId = "storefront-classic",
   storeName,
   logoUrl,
   storeId,
   settings,
   products,
+  productTextOverrides = {},
   texts,
   hidden,
   currency,
@@ -711,15 +832,20 @@ export function StorefrontPreview({
   onSelectSection,
   onToggleHidden,
   onUpdateText,
+  onUpdateProductText = () => undefined,
   page,
   onNavigate,
   badgeEditable = false,
+  heroImageOverride = null,
+  loading = false,
 }: {
+  templateId?: TemplateId;
   storeName: string;
   logoUrl: string;
   storeId?: string;
   settings: Settings | null;
   products: Product[];
+  productTextOverrides?: ProductTextOverrides;
   texts: TextConfig;
   hidden: HiddenConfig;
   currency: string;
@@ -729,10 +855,25 @@ export function StorefrontPreview({
   onSelectSection: (id: SectionId) => void;
   onToggleHidden: (id: SectionId, value?: boolean) => void;
   onUpdateText: (id: SectionId, field: TextField, value: string) => void;
+  onUpdateProductText?: (productId: string, field: keyof ProductTextOverride, value: string) => void;
   page: PreviewPage;
   onNavigate: (page: PreviewPage) => void;
   badgeEditable?: boolean;
+  heroImageOverride?: string | null;
+  loading?: boolean;
 }) {
+  if (loading) {
+    const wrapperByTemplate: Record<string, string> = {
+      "storefront-classic": "storefront-page",
+      "storefront-modern": "bauhaus-page",
+      "storefront-bauhaus": "bauhaus-page",
+      "storefront-pastel": "pastel-store",
+      "storefront-pastel-bauhaus": "pastel-store is-bauhaus",
+      "storefront-cyber": "cyber-page",
+    };
+    const wrapperClass = wrapperByTemplate[templateId ?? "storefront-classic"] ?? "storefront-page";
+    return <StorefrontSkeleton wrapperClass={wrapperClass} showHero={page === "home"} cardCount={page === "product" ? 0 : 8} />;
+  }
   const isTextEditMode = editable && textEditMode !== false;
   const categories = Array.from(groupByCategory(products).entries());
   const heroImages = products.filter((product) => productThumbnail(product)).slice(0, 5);
@@ -766,6 +907,87 @@ export function StorefrontPreview({
   const filteredProducts = selectedCategory
     ? products.filter((product) => (product.tags ?? []).includes(selectedCategory))
     : products;
+
+  if (templateId === "storefront-modern" || templateId === "storefront-bauhaus") {
+    return (
+      <StorefrontBauhausTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "storefront-cyber") {
+    return (
+      <StorefrontCyberTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "storefront-pastel" || templateId === "storefront-pastel-bauhaus") {
+    return (
+      <StorefrontPastelTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        variant={templateId === "storefront-pastel-bauhaus" ? "bauhaus" : "default"}
+      />
+    );
+  }
 
   function addToCart(product: Product, quantity = 1) {
     const limit = stockLimit(product);
@@ -864,33 +1086,58 @@ export function StorefrontPreview({
               ))}
             </div>
             <div className="product-card-grid">
-              {filteredProducts.map((product) => (
-                <article
-                  className="place-card"
-                  key={product.id}
-                  onClick={() => navigate("product")}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="place-image">
-                    {productGallery(product)[0] ? (
-                      <img src={productGallery(product)[0]} alt={product.name} />
-                    ) : null}
-                    <div className="place-tag-row">
-                      {(product.tags ?? []).slice(0, 2).map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
+              {filteredProducts.map((product) => {
+                const cardStock = stockLimit(product);
+                const cardInCart = cartItems[product.id] ?? 0;
+                const cardRemaining = Math.max(0, cardStock - cardInCart);
+                const cardDisabled = cardStock === 0 || cardRemaining === 0;
+                return (
+                  <article
+                    className="place-card"
+                    key={product.id}
+                    onClick={() => navigate("product")}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="place-image">
+                      {productGallery(product)[0] ? (
+                        <img src={productGallery(product)[0]} alt={product.name} />
+                      ) : null}
+                      <div className="place-tag-row">
+                        {(product.tags ?? []).slice(0, 2).map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="place-body">
-                    <h3>{product.name}</h3>
-                    <p className="place-description">
-                      {product.subtitle || product.description || "Produk dari toko eTalase ini."}
-                    </p>
-                    <strong>{formatPrice(effectivePrice(product), currency)}</strong>
-                  </div>
-                </article>
-              ))}
+                    <div className="place-body">
+                      <h3>{product.name}</h3>
+                      <p className="place-description">
+                        {product.subtitle || product.description || "Produk dari toko eTalase ini."}
+                      </p>
+                      <div className="place-foot">
+                        <strong>{formatPrice(effectivePrice(product), currency)}</strong>
+                        <button
+                          type="button"
+                          className="card-add"
+                          disabled={cardDisabled}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (cardDisabled) return;
+                            addToCart(product, 1);
+                          }}
+                          aria-label={cardDisabled ? "Stok habis" : "Tambah ke keranjang"}
+                        >
+                          {cardDisabled ? "Stok habis" : (
+                            <>
+                              <ShoppingBag size={14} /> Tambah
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1092,12 +1339,12 @@ export function StorefrontPreview({
               {categories.slice(0, 6).map(([category, items], index) => {
                 const cover = items.find((product) => productThumbnail(product)) ?? items[0];
                 const themes = [
-                  "150 50% 25%",
-                  "250 50% 30%",
-                  "20 80% 35%",
-                  "200 60% 30%",
-                  "330 50% 35%",
-                  "40 70% 30%",
+                  "var(--brand-hsl)",
+                  "var(--accent-hsl)",
+                  "var(--brand-hsl)",
+                  "var(--accent-hsl)",
+                  "var(--brand-hsl)",
+                  "var(--accent-hsl)",
                 ];
                 return (
                   <a

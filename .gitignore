@@ -1,7 +1,26 @@
-.env
-node_modules/
-Pages/store-app/node_modules/
-Pages/store-app/dist/
-Pages/store-app/tsconfig.app.tsbuildinfo
-Pages/d0909d76-bd7a-4584-853c-aa432788b223/
+# Frontend (Next.js builder)
+frontend/.env
+frontend/.env.local
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# Monorepo (Next.js builder)
+monorepo/.env
+monorepo/node_modules/
+monorepo/.next/
+monorepo/legacy-pages/store-app/node_modules/
+monorepo/legacy-pages/store-app/dist/
+monorepo/legacy-pages/store-app/tsconfig.app.tsbuildinfo
+monorepo/sites/*/node_modules/
+monorepo/sites/*/dist/
+monorepo/sites/*/*.tsbuildinfo
+monorepo/tsconfig.tsbuildinfo
+
+# Standalone NestJS backend
+backend/node_modules/
+backend/dist/
+backend/*.tsbuildinfo
+
+# Claude Code
 .claude/skills/ui-ux-pro-max/scripts/__pycache__/

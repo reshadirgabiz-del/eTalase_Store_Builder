@@ -3,7 +3,10 @@
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Alert, Button, Loader, Stack, Text } from "@mantine/core";
-import { colorSchemes, type ColorScheme } from "@/lib/templates";
+import { createEtalaseClient } from "etalase-module";
+import { colorSchemes, type ColorScheme, type TemplateId } from "@/lib/templates";
+
+const ETALASE_API_URL = process.env.NEXT_PUBLIC_ETALASE_API_URL;
 import {
   EMPTY_HIDDEN,
   INITIAL_TEXT,
@@ -13,6 +16,7 @@ import {
   type HiddenConfig,
   type PreviewPage,
   type Product,
+  type ProductTextOverrides,
   type Settings,
   type StoreInfo,
   type TextConfig,
@@ -22,8 +26,10 @@ type Snapshot = {
   storeId?: string;
   publicKey?: string;
   theme: ColorScheme;
+  templateId?: TemplateId;
   texts: TextConfig;
   hidden: HiddenConfig;
+  config?: { productTextOverrides?: ProductTextOverrides };
   publishedAt?: string;
 };
 
@@ -66,24 +72,18 @@ export default function PublishedPreviewPage({
     let cancelled = false;
     (async () => {
       try {
-        const [storeResponse, settingsResponse, productsResponse] = await Promise.all([
-          fetch(`/api/stores/${encodeURIComponent(decodedKey)}/public`),
-          fetch(`/api/settings/public?storeId=${encodeURIComponent(decodedKey)}`),
-          fetch(`/api/products?storeId=${encodeURIComponent(decodedKey)}&limit=10`),
+        const client = createEtalaseClient({ storeKey: decodedKey, apiUrl: ETALASE_API_URL });
+        const [info, nextSettings, productPage] = await Promise.all([
+          client.store.getInfo(),
+          client.store.getSettings(),
+          client.products.list({ limit: 10 }),
         ]);
 
         if (cancelled) return;
 
-        if (storeResponse.ok) {
-          setStoreInfo(await storeResponse.json());
-        }
-        if (settingsResponse.ok) {
-          setSettings(await settingsResponse.json());
-        }
-        if (productsResponse.ok) {
-          const json = await productsResponse.json();
-          setProducts(json.data ?? []);
-        }
+        if (info) setStoreInfo({ ...info, publicKey: decodedKey });
+        setSettings(nextSettings);
+        setProducts(productPage.data ?? []);
         setLoadState("ready");
       } catch (err) {
         if (cancelled) return;
@@ -147,11 +147,13 @@ export default function PublishedPreviewPage({
   return (
     <div className="published-shell" style={themeStyle}>
       <StorefrontPreview
+        templateId={snapshot.templateId ?? "storefront-classic"}
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeInfo?.storeId || snapshot.storeId || decodedKey}
         settings={settings}
         products={liveProducts}
+        productTextOverrides={snapshot.config?.productTextOverrides ?? {}}
         texts={texts}
         hidden={hidden}
         currency={currency}
@@ -160,6 +162,7 @@ export default function PublishedPreviewPage({
         onSelectSection={() => undefined}
         onToggleHidden={() => undefined}
         onUpdateText={() => undefined}
+        onUpdateProductText={() => undefined}
         page={page}
         onNavigate={setPage}
       />

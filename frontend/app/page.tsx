@@ -1,5 +1,5 @@
-import { BuilderWorkspace } from "@/app/components/builder-workspace";
+import { BuilderLandingPage } from "@/app/components/builder-reference";
 
 export default function HomePage() {
-  return <BuilderWorkspace />;
+  return <BuilderLandingPage />;
 }

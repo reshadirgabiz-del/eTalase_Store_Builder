@@ -1,4 +1,16 @@
-export type TemplateId = "storefront-classic" | "custom-upload";
+export type TemplateId = "storefront-classic" | "storefront-modern" | "storefront-pastel" | "storefront-pastel-bauhaus" | "storefront-bauhaus" | "storefront-cyber" | "custom-upload";
+
+export type TemplateLayout = "full-home" | "catalogue-first";
+
+export const TEMPLATE_LAYOUT_LABEL: Record<TemplateLayout, string> = {
+  "full-home": "Beranda lengkap",
+  "catalogue-first": "Fokus katalog",
+};
+
+export const TEMPLATE_LAYOUT_DESCRIPTION: Record<TemplateLayout, string> = {
+  "full-home": "Halaman beranda penuh dengan hero, kategori, dan produk unggulan sebelum katalog.",
+  "catalogue-first": "Modal intro singkat lalu langsung ke katalog produk.",
+};
 
 export type BuilderTemplate = {
   id: TemplateId;
@@ -8,6 +20,7 @@ export type BuilderTemplate = {
   description: string;
   sdkReference: string;
   capabilities: string[];
+  layout?: TemplateLayout;
 };
 
 export const templates: BuilderTemplate[] = [
@@ -16,10 +29,55 @@ export const templates: BuilderTemplate[] = [
     name: "Storefront Classic",
     source: "../Storepage test/my-app",
     status: "ready",
+    layout: "full-home",
     description:
       "Template storefront Next.js yang sudah diuji dengan alur SDK eTalase lokal. Builder dapat mengubah warna dan teks utama halaman sebelum deploy.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero katalog", "Bagian kategori", "Sidebar keranjang", "Halaman katalog"],
+  },
+  {
+    id: "storefront-modern",
+    name: "Storefront Modern",
+    source: "../Storepage test/template-2",
+    status: "ready",
+    layout: "full-home",
+    description:
+      "Template storefront modern-minimalis dengan inspirasi Bauhaus, geometri tegas, tata letak grid rapi, animasi halus, dan fokus katalog e-commerce.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero Bauhaus modern", "Grid kategori blok", "Katalog produk animatif", "Sidebar keranjang"],
+  },
+  {
+    id: "storefront-pastel",
+    name: "Storefront Pastel",
+    source: "../Storepage test/template-3",
+    status: "ready",
+    layout: "catalogue-first",
+    description:
+      "Template storefront pastel dengan kartu kategori besar, intro produk bergaya fan gallery, dan katalog visual yang ringan untuk toko lifestyle.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Fan hero produk", "Kartu kategori pastel", "Katalog kartu lembut", "Halaman detail produk"],
+  },
+  {
+    id: "storefront-pastel-bauhaus",
+    name: "Storefront Pastel Bauhaus",
+    source: "../Storepage test/template-5",
+    status: "ready",
+    layout: "catalogue-first",
+    description:
+      "Varian dari template pastel dengan estetika Bauhaus: warna primer berani, bentuk geometris tegas, garis hairline, dan kartu kategori berwarna blok. Layout tetap mengikuti template pastel.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero opening Bauhaus", "Kartu kategori warna blok", "Katalog kartu kotak", "Detail produk geometris"],
+  },
+  {
+    id: "storefront-cyber",
+    name: "Storefront Cyber Glitch",
+    source: "../Storepage test/template-4",
+    status: "ready",
+    layout: "full-home",
+    description:
+      "Template minimalis cyberpunk dengan kanvas off-white, sentuhan neon magenta dan cyan, efek RGB-shift saat hover, dan judul bergaya glitch untuk toko bernuansa edgy dan futuristik.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero glitch chromatic", "Kartu kategori neon", "Katalog kartu hairline", "Sidebar keranjang"],
   },
   {
     id: "custom-upload",
@@ -152,6 +210,104 @@ export const colorSchemes: ColorScheme[] = [
     surface: "#ffffff",
     ink: "#0a0a0a",
     muted: "#525252",
+  },
+  {
+    id: "bauhaus-primary",
+    name: "Bauhaus Primary",
+    fontBody: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#e63946",
+    brandStrong: "#b8202d",
+    buttonText: "#ffffff",
+    accent: "#ffd400",
+    pageBg: "#f4f1ea",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#4b4b4b",
+  },
+  {
+    id: "bauhaus-cobalt",
+    name: "Bauhaus Cobalt",
+    fontBody: "var(--font-inter), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-inter), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#1e40af",
+    brandStrong: "#1e3a8a",
+    buttonText: "#ffffff",
+    accent: "#f97316",
+    pageBg: "#fefcf5",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#475569",
+  },
+  {
+    id: "bauhaus-sunshine",
+    name: "Bauhaus Sunshine",
+    fontBody: "var(--font-dm-sans), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-dm-sans), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#0a0a0a",
+    brandStrong: "#000000",
+    buttonText: "#ffd400",
+    accent: "#1e40af",
+    pageBg: "#ffd400",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#3f3f46",
+  },
+  {
+    id: "bauhaus-mint",
+    name: "Bauhaus Mint",
+    fontBody: "var(--font-manrope), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-manrope), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#0f9d58",
+    brandStrong: "#0a7a44",
+    buttonText: "#ffffff",
+    accent: "#d946ef",
+    pageBg: "#f0fdf4",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#3f4a44",
+  },
+  {
+    id: "bauhaus-electric",
+    name: "Bauhaus Electric",
+    fontBody: "var(--font-urbanist), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-urbanist), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#ec4899",
+    brandStrong: "#be185d",
+    buttonText: "#ffffff",
+    accent: "#06b6d4",
+    pageBg: "#fef3f8",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#52525b",
+  },
+  {
+    id: "cyber-bone",
+    name: "Cyber Bone",
+    fontBody: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#ff006e",
+    brandStrong: "#c5005a",
+    buttonText: "#f5f5f0",
+    accent: "#00f0ff",
+    pageBg: "#f5f5f0",
+    surface: "#ffffff",
+    ink: "#0a0a0f",
+    muted: "#5a5a66",
+  },
+  {
+    id: "cyber-night",
+    name: "Cyber Night",
+    fontBody: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#ff2bd6",
+    brandStrong: "#cc1fa9",
+    buttonText: "#0a0a0f",
+    accent: "#00f0ff",
+    pageBg: "#0a0a0f",
+    surface: "#13131c",
+    ink: "#f5f5f0",
+    muted: "#9a9aa8",
   },
 ];
 

@@ -4,7 +4,7 @@ Next.js master builder for creating storefront pages from approved templates.
 
 ## Local development
 
-1. Copy `.env.example` to `.env` and set `SUPABASE_URL` plus `SUPABASE_SERVICE_ROLE_KEY`.
+1. Copy `.env.example` to `.env` and set builder Supabase credentials (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) plus the source eTalase Supabase credentials (`ETALASE_SOURCE_SUPABASE_URL`, `ETALASE_SOURCE_SUPABASE_SERVICE_ROLE_KEY`).
 2. Run `npm install`.
 3. Run `npm run dev`.
 

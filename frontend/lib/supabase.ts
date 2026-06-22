@@ -1,8 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 let cachedClient: SupabaseClient | null = null;
+let cachedSourceClient: SupabaseClient | null = null;
 
 export function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL;
@@ -18,17 +17,31 @@ export function getSupabaseAdmin(): SupabaseClient {
   return cachedClient;
 }
 
-export async function resolveStoreId(storeKeyOrId: string): Promise<string | null> {
-  if (UUID_RE.test(storeKeyOrId)) return storeKeyOrId;
+export function getEtalaseSourceSupabase(): SupabaseClient {
+  const url = process.env.ETALASE_SOURCE_SUPABASE_URL;
+  const key = process.env.ETALASE_SOURCE_SUPABASE_SERVICE_ROLE_KEY;
 
+  if (!url || !key) {
+    throw new Error(
+      "ETALASE_SOURCE_SUPABASE_URL and ETALASE_SOURCE_SUPABASE_SERVICE_ROLE_KEY must be set in frontend/.env",
+    );
+  }
+
+  cachedSourceClient ??= createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return cachedSourceClient;
+}
+
+export async function resolveOwnerStoreId(storeKeyOrId: string): Promise<string | null> {
   const { data, error } = await getSupabaseAdmin()
-    .from("stores")
-    .select("id")
-    .eq("public_store_key", storeKeyOrId)
+    .from("builder_owners")
+    .select("store_id")
+    .eq("store_id", storeKeyOrId)
     .maybeSingle();
 
   if (error) throw error;
-  return data?.id ?? null;
+  return data?.store_id ?? null;
 }
 
 export function jsonError(message: string, status = 500): Response {

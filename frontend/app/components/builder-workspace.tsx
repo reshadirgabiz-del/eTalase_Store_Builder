@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Accordion,
   ActionIcon,
   Alert,
   Badge,
@@ -9,13 +10,14 @@ import {
   ColorInput,
   FileInput,
   Group,
+  Loader,
   Menu,
   Modal,
   Paper,
+  PasswordInput,
   ScrollArea,
   SegmentedControl,
   Select,
-  SimpleGrid,
   Stack,
   Switch,
   Tabs,
@@ -23,13 +25,31 @@ import {
   TextInput,
   Title,
   Tooltip,
-  UnstyledButton,
 } from "@mantine/core";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import splashImage from "../../assets/splash.png";
+import etalaseLogo from "../../assets/logo.png";
+import templateClassicShot from "../../assets/templateScreenshots/storefront-classic.png";
+import templateModernShot from "../../assets/templateScreenshots/storefront-modern.png";
+import templatePastelShot from "../../assets/templateScreenshots/storefront-pastel.png";
+import templateCyberShot from "../../assets/templateScreenshots/storefront-cyber-glitch.png";
+import templatePastelBauhausShot from "../../assets/templateScreenshots/storefront-pastel-bauhaus.png";
+
+const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
+  "storefront-classic": templateClassicShot,
+  "storefront-modern": templateModernShot,
+  "storefront-bauhaus": templateModernShot,
+  "storefront-pastel": templatePastelShot,
+  "storefront-pastel-bauhaus": templatePastelBauhausShot,
+  "storefront-cyber": templateCyberShot,
+};
+import { createEtalaseClient } from "etalase-module";
 import {
   AlertTriangle,
   ArrowLeft,
   BookOpen,
+  Check,
   CircleDot,
   Eye,
   EyeOff,
@@ -50,10 +70,12 @@ import {
 import {
   COLOR_FIELDS,
   FONT_OPTIONS,
+  TEMPLATE_LAYOUT_LABEL,
   colorSchemes,
   templates,
   type ColorScheme,
   type TemplateId,
+  type TemplateLayout,
 } from "@/lib/templates";
 import {
   EDITABLE_SECTIONS,
@@ -64,9 +86,12 @@ import {
   StorefrontPreview,
   buildThemeStyle,
   fallbackProducts,
+  templateSupportsHeroImage,
   type HiddenConfig,
   type PreviewPage,
   type Product,
+  type ProductTextOverride,
+  type ProductTextOverrides,
   type SectionId,
   type Settings,
   type StoreInfo,
@@ -78,11 +103,71 @@ type Screen = "templates" | "editor";
 type LoadState = "idle" | "loading" | "ready" | "error";
 type PanelTab = "layout" | "theme";
 type EditorMode = "text" | "section";
+type AliasStatus = "idle" | "checking" | "available" | "taken" | "invalid" | "error";
 
 const PUBLISH_KEY_PREFIX = "etalase-builder-publish::";
 const STORE_ID_STORAGE_KEY = "etalase-builder-store-id";
+const PUBLIC_STORE_KEY_STORAGE_KEY = "etalase-builder-public-store-key";
 const LEGACY_PUBLIC_KEY_STORAGE_KEY = "etalase-builder-public-key";
+const DEMO_STORE_ID = "583e6139-c4cb-4037-beb1-0f787867ff90";
+const DEMO_PUBLIC_KEY = "etalase_pk_live_ENvGGo5xJ9KlBgdraJuSf_ThMoNwndBke6R_5ZVNv9I";
 const TEMPLATE_LOCKED = true;
+const STOREFRONT_BASE_URL = (process.env.NEXT_PUBLIC_STOREFRONT_BASE_URL ?? "https://store.e-talase.com").replace(/\/+$/, "");
+const ETALASE_API_URL = process.env.NEXT_PUBLIC_ETALASE_API_URL;
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+const VISIBLE_COLOR_SCHEME_IDS = [
+  "teal-gold",
+  "minimal-mono",
+  "graphite-lime",
+  "indigo-coral",
+  "forest-sky",
+  "ocean-sunset",
+  "bauhaus-primary",
+  "bauhaus-cobalt",
+];
+
+const COLOR_FIELD_GROUPS: {
+  value: string;
+  label: string;
+  fields: Array<(typeof COLOR_FIELDS)[number]["key"]>;
+}[] = [
+  { value: "text", label: "Text colors", fields: ["ink", "muted"] },
+  { value: "brand", label: "Brand and buttons", fields: ["brand", "brandStrong", "buttonText"] },
+  { value: "surface", label: "Backgrounds and surfaces", fields: ["pageBg", "surface"] },
+  { value: "accent", label: "Accent colors", fields: ["accent"] },
+];
+
+function normalizeCustomStoreName(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function isValidCustomStoreName(value: string) {
+  return /^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$/.test(value);
+}
+
+function customStoreUri(alias: string) {
+  return `${STOREFRONT_BASE_URL}/${alias}`;
+}
+
+function setBuilderCookie(name: string, value: string) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+function getBuilderCookie(name: string) {
+  const raw = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split("=")
+    .slice(1)
+    .join("=");
+  return raw ? decodeURIComponent(raw) : "";
+}
 
 function normalizeFontOption(value: string | undefined, fallback: string) {
   if (!value) return fallback;
@@ -96,18 +181,29 @@ function normalizeFontOption(value: string | undefined, fallback: string) {
 export function BuilderWorkspace() {
   const router = useRouter();
   const [storeId, setStoreId] = useState("");
+  const [publicStoreKey, setPublicStoreKey] = useState("");
   const [draftStoreId, setDraftStoreId] = useState("");
+  const [draftSecretKey, setDraftSecretKey] = useState("");
   const [keyModalOpen, setKeyModalOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthing, setIsAuthing] = useState(false);
 
   useEffect(() => {
-    const stored =
-      window.localStorage.getItem(STORE_ID_STORAGE_KEY) ??
-      window.localStorage.getItem(LEGACY_PUBLIC_KEY_STORAGE_KEY) ??
-      "";
-    setStoreId(stored);
-    setDraftStoreId(stored);
-    setKeyModalOpen(!stored);
+    const stored = window.localStorage.getItem(STORE_ID_STORAGE_KEY) || getBuilderCookie(STORE_ID_STORAGE_KEY);
+    const storeIdValue = stored.startsWith("etalase_pk_") ? "" : stored;
+    if (stored && !storeIdValue) {
+      window.localStorage.removeItem(STORE_ID_STORAGE_KEY);
+    }
+    const storedPublicKey =
+      storeIdValue
+        ? window.localStorage.getItem(PUBLIC_STORE_KEY_STORAGE_KEY) || getBuilderCookie(PUBLIC_STORE_KEY_STORAGE_KEY)
+        : "";
+    window.localStorage.removeItem(LEGACY_PUBLIC_KEY_STORAGE_KEY);
+    setStoreId(storeIdValue);
+    setDraftStoreId(storeIdValue);
+    setPublicStoreKey(storedPublicKey);
+    setKeyModalOpen(!storeIdValue);
     setHasHydrated(true);
   }, []);
 
@@ -122,9 +218,12 @@ export function BuilderWorkspace() {
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [productTextOverrides, setProductTextOverrides] = useState<ProductTextOverrides>({});
   const [scheme, setScheme] = useState<ColorScheme>(colorSchemes[0]);
   const [texts, setTexts] = useState<TextConfig>(INITIAL_TEXT);
   const [hidden, setHidden] = useState<HiddenConfig>(EMPTY_HIDDEN);
+  const [heroImageOverride, setHeroImageOverride] = useState<string | null>(null);
+  const [heroImageError, setHeroImageError] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<SectionId>("hero");
   const [editorMode, setEditorMode] = useState<EditorMode>("text");
   const [panelOpen, setPanelOpen] = useState(true);
@@ -134,6 +233,11 @@ export function BuilderWorkspace() {
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishedAt, setPublishedAt] = useState<string | null>(null);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [customStoreName, setCustomStoreName] = useState("");
+  const [aliasStatus, setAliasStatus] = useState<AliasStatus>("idle");
+  const [aliasMessage, setAliasMessage] = useState("");
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const liveProducts = products.length > 0 ? products : fallbackProducts;
   const storeName = settings?.storeName || storeInfo?.storeName || "Storefront";
@@ -142,6 +246,8 @@ export function BuilderWorkspace() {
 
   const template = templates.find((item) => item.id === selectedTemplate) ?? templates[0];
   const previewTemplateData = templates.find((item) => item.id === previewTemplate) ?? template;
+  const visibleColorSchemes = colorSchemes.filter((preset) => VISIBLE_COLOR_SCHEME_IDS.includes(preset.id));
+  const colorFieldByKey = new Map(COLOR_FIELDS.map((field) => [field.key, field]));
 
   const themeStyle = useMemo(() => buildThemeStyle(scheme), [scheme]);
   const bodyFontValue = normalizeFontOption(scheme.fontBody, FONT_OPTIONS[0].value);
@@ -152,32 +258,31 @@ export function BuilderWorkspace() {
     setError(null);
 
     try {
-      const [storeResponse, settingsResponse, productsResponse] = await Promise.all([
-        fetch(`/api/stores/${encodeURIComponent(key)}/public`),
-        fetch(`/api/settings/public?storeId=${encodeURIComponent(key)}`),
-        fetch(`/api/products?storeId=${encodeURIComponent(key)}&limit=10`),
+      const client = createEtalaseClient({ storeKey: key, apiUrl: ETALASE_API_URL });
+      const [info, settings, productPage] = await Promise.all([
+        client.store.getInfo(),
+        client.store.getSettings(),
+        client.products.list({ limit: 10 }),
       ]);
 
-      const storeJson = await storeResponse.json();
-      if (!storeResponse.ok) throw new Error(storeJson.error ?? "Pencarian toko gagal");
+      if (!info) throw new Error("Pencarian toko gagal");
 
-      const nextSettings = settingsResponse.ok ? await settingsResponse.json() : null;
-      setStoreInfo(storeJson);
-      setSettings(nextSettings);
-      if (nextSettings?.storeDescription) {
+      setStoreInfo({ ...info, publicKey: key });
+      setSettings(settings);
+      if (settings?.storeDescription) {
         setTexts((current) => ({
           ...current,
           hero:
             current.hero.body === INITIAL_TEXT.hero.body
-              ? { ...current.hero, body: nextSettings.storeDescription }
+              ? { ...current.hero, body: settings.storeDescription! }
               : current.hero,
           footer:
             current.footer.body === INITIAL_TEXT.footer.body
-              ? { ...current.footer, body: nextSettings.storeDescription }
+              ? { ...current.footer, body: settings.storeDescription! }
               : current.footer,
         }));
       }
-      setProducts(productsResponse.ok ? (await productsResponse.json()).data ?? [] : []);
+      setProducts(productPage.data ?? []);
       setLoadState("ready");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tidak dapat memuat data toko");
@@ -186,16 +291,95 @@ export function BuilderWorkspace() {
   }, []);
 
   useEffect(() => {
-    if (!storeId) return;
-    void loadStore(storeId);
-  }, [loadStore, storeId]);
+    const lookupKey = publicStoreKey || storeId;
+    if (!lookupKey) return;
+    void loadStore(lookupKey);
+  }, [loadStore, publicStoreKey, storeId]);
 
-  function saveStoreId() {
+  useEffect(() => {
+    if (!publishModalOpen || publishedUrl) return;
+    const alias = normalizeCustomStoreName(customStoreName);
+    setPublishError(null);
+    if (!alias) {
+      setAliasStatus("idle");
+      setAliasMessage("");
+      return;
+    }
+    if (!isValidCustomStoreName(alias)) {
+      setAliasStatus("invalid");
+      setAliasMessage("Gunakan 3-63 karakter: huruf kecil, angka, dan tanda hubung.");
+      return;
+    }
+
+    setAliasStatus("checking");
+    setAliasMessage("Memeriksa ketersediaan...");
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ alias, storeId });
+        const response = await fetch(`/api/stores/custom-uri?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        const json = await response.json();
+        if (!response.ok) throw new Error(json.error ?? "Tidak dapat memeriksa link.");
+        setAliasStatus(json.available ? "available" : "taken");
+        setAliasMessage(
+          json.available
+            ? "Link tersedia."
+            : "Link ini sudah digunakan. Pilih nama lain.",
+        );
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setAliasStatus("error");
+        setAliasMessage(err instanceof Error ? err.message : "Tidak dapat memeriksa link.");
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [customStoreName, publishModalOpen, publishedUrl, storeId]);
+
+  async function saveStoreId() {
     const normalized = draftStoreId.trim();
-    if (!normalized) return;
-    window.localStorage.setItem(STORE_ID_STORAGE_KEY, normalized);
-    setStoreId(normalized);
-    setKeyModalOpen(false);
+    const secret = draftSecretKey;
+    if (!normalized || !secret) return;
+
+    setIsAuthing(true);
+    setAuthError(null);
+    try {
+      const response = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeId: normalized, secretKey: secret }),
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(json.error ?? "Tidak dapat login.");
+      }
+
+      const nextStoreId = typeof json.storeId === "string" ? json.storeId : normalized;
+      const nextPublicStoreKey = typeof json.publicStoreKey === "string" ? json.publicStoreKey : "";
+      window.localStorage.setItem(STORE_ID_STORAGE_KEY, nextStoreId);
+      setBuilderCookie(STORE_ID_STORAGE_KEY, nextStoreId);
+      if (nextPublicStoreKey) {
+        window.localStorage.setItem(PUBLIC_STORE_KEY_STORAGE_KEY, nextPublicStoreKey);
+        setBuilderCookie(PUBLIC_STORE_KEY_STORAGE_KEY, nextPublicStoreKey);
+      } else {
+        window.localStorage.removeItem(PUBLIC_STORE_KEY_STORAGE_KEY);
+        setBuilderCookie(PUBLIC_STORE_KEY_STORAGE_KEY, "");
+      }
+      setStoreId(nextStoreId);
+      setPublicStoreKey(nextPublicStoreKey);
+      setDraftStoreId(nextStoreId);
+      setDraftSecretKey("");
+      setKeyModalOpen(false);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : "Tidak dapat login.");
+    } finally {
+      setIsAuthing(false);
+    }
   }
 
   function selectSection(section: SectionId) {
@@ -205,7 +389,7 @@ export function BuilderWorkspace() {
 
   function selectTemplate(id: TemplateId) {
     setSelectedTemplate(id);
-    if (id === "storefront-classic") {
+    if (id !== "custom-upload") {
       setScreen("editor");
       setPreviewMode(false);
     }
@@ -215,6 +399,13 @@ export function BuilderWorkspace() {
     setTexts((current) => ({
       ...current,
       [section]: { ...current[section], [field]: value },
+    }));
+  }
+
+  function updateProductText(productId: string, field: keyof ProductTextOverride, value: string) {
+    setProductTextOverrides((current) => ({
+      ...current,
+      [productId]: { ...(current[productId] ?? {}), [field]: value },
     }));
   }
 
@@ -238,28 +429,97 @@ export function BuilderWorkspace() {
     setScheme(colorSchemes[0]);
   }
 
+  function handleHeroImageUpload(file: File | null) {
+    setHeroImageError(null);
+    if (!file) {
+      setHeroImageOverride(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setHeroImageError("File harus berupa gambar.");
+      return;
+    }
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setHeroImageError("Ukuran gambar maksimum 5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") setHeroImageOverride(result);
+    };
+    reader.onerror = () => setHeroImageError("Tidak dapat membaca file.");
+    reader.readAsDataURL(file);
+  }
+
   const exportConfig = {
     storeId,
-    publicKey: storeId,
+    publicKey: publicStoreKey || storeId,
+    templateId: template.id,
     template,
     theme: scheme,
     texts,
     hidden,
+    config: { productTextOverrides, heroImageOverride },
     publishedAt: new Date().toISOString(),
   };
 
-  function publish() {
+  async function publish() {
     if (!storeId) return;
-    const config = { ...exportConfig, publishedAt: new Date().toISOString() };
-    window.localStorage.setItem(PUBLISH_KEY_PREFIX + storeId, JSON.stringify(config));
-    window.localStorage.setItem("etalase-builder-last-publish", JSON.stringify(config));
-    setPublishedAt(new Date().toLocaleString());
-    setPublishedUrl(`/preview/${encodeURIComponent(storeId)}`);
+    const alias = normalizeCustomStoreName(customStoreName);
+    if (!isValidCustomStoreName(alias)) {
+      setAliasStatus("invalid");
+      setAliasMessage("Gunakan 3-63 karakter: huruf kecil, angka, dan tanda hubung.");
+      return;
+    }
+    if (aliasStatus !== "available") {
+      setPublishError("Gunakan link yang tersedia sebelum publish.");
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishError(null);
+    try {
+      const response = await fetch("/api/stores/custom-uri", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          alias,
+          templateId: template.id,
+          theme: scheme,
+          texts,
+          hidden,
+          config: { productTextOverrides, heroImageOverride },
+        }),
+      });
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error ?? "Tidak dapat menyimpan link storefront.");
+
+      const publishedAtIso = new Date().toISOString();
+      const config = {
+        ...exportConfig,
+        publishedAt: publishedAtIso,
+        customStoreName: alias,
+        customStoreUri: json.customStoreUri ?? customStoreUri(alias),
+      };
+      window.localStorage.setItem(PUBLISH_KEY_PREFIX + storeId, JSON.stringify(config));
+      window.localStorage.setItem(PUBLISH_KEY_PREFIX + alias, JSON.stringify(config));
+      window.localStorage.setItem("etalase-builder-last-publish", JSON.stringify(config));
+      setPublishedAt(new Date(publishedAtIso).toLocaleString());
+      setPublishedUrl(json.customStoreUri ?? customStoreUri(alias));
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Tidak dapat publish storefront.");
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   function openPublishedPage() {
     if (publishedUrl) {
-      router.push(publishedUrl);
+      const url = new URL(publishedUrl);
+      router.push(url.pathname);
     }
   }
 
@@ -278,19 +538,46 @@ export function BuilderWorkspace() {
       >
         <Stack>
           <Text size="sm" c="dimmed">
-            Masukkan Store ID sebelum memilih atau mengedit template. ID ini sama dengan yang digunakan di URL checkout.
+            Masukkan Store ID dan access key toko. Jika belum ada secret key khusus, gunakan public key eTalase untuk menyinkronkan toko dari SDK.
           </Text>
           <TextInput
             label="Store ID"
             placeholder="00000000-0000-0000-0000-000000000000"
             value={draftStoreId}
             onChange={(event) => setDraftStoreId(event.currentTarget.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") saveStoreId();
-            }}
+            disabled={isAuthing}
           />
-          <Button onClick={saveStoreId} disabled={!draftStoreId.trim()}>
-            Lanjutkan
+          <PasswordInput
+            label="Access key"
+            placeholder="etalase_pk_live_... atau etalase_sk_live_..."
+            value={draftSecretKey}
+            onChange={(event) => setDraftSecretKey(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") void saveStoreId();
+            }}
+            disabled={isAuthing}
+          />
+          {authError && (
+            <Alert color="red" variant="light">
+              {authError}
+            </Alert>
+          )}
+          <Button
+            onClick={() => void saveStoreId()}
+            loading={isAuthing}
+            disabled={!draftStoreId.trim() || !draftSecretKey}
+          >
+            Login
+          </Button>
+          <Button
+            variant="light"
+            onClick={() => {
+              setDraftStoreId(DEMO_STORE_ID);
+              setDraftSecretKey(DEMO_PUBLIC_KEY);
+            }}
+            disabled={isAuthing}
+          >
+            Gunakan akun demo
           </Button>
         </Stack>
       </Modal>
@@ -325,23 +612,28 @@ export function BuilderWorkspace() {
         <div className={`editor-shell ${panelOpen && !previewMode ? "panel-open" : ""}`} style={themeStyle}>
           <div className="editor-canvas">
             <StorefrontPreview
+              templateId={selectedTemplate}
               storeName={storeName}
               logoUrl={logoUrl}
               storeId={storeInfo?.storeId || storeId}
               settings={settings}
               products={liveProducts}
+              productTextOverrides={productTextOverrides}
               texts={texts}
               hidden={hidden}
               currency={currency}
-              editable={!previewMode && !TEMPLATE_LOCKED}
+              editable={!previewMode}
               textEditMode={editorMode === "text"}
               selectedSection={selectedSection}
               onSelectSection={selectSection}
               onToggleHidden={toggleHidden}
               onUpdateText={updateText}
+              onUpdateProductText={updateProductText}
               page={previewPage}
               onNavigate={setPreviewPage}
               badgeEditable={!previewMode}
+              heroImageOverride={heroImageOverride}
+              loading={loadState === "loading"}
             />
           </div>
 
@@ -364,6 +656,10 @@ export function BuilderWorkspace() {
                 onPublish={() => {
                   setPublishedAt(null);
                   setPublishedUrl(null);
+                  setPublishError(null);
+                  setAliasStatus("idle");
+                  setAliasMessage("");
+                  setCustomStoreName((current) => current || normalizeCustomStoreName(storeName));
                   setPublishModalOpen(true);
                 }}
                 onOpenKeyModal={() => setKeyModalOpen(true)}
@@ -376,7 +672,7 @@ export function BuilderWorkspace() {
                       Template
                     </Text>
                     <Title order={4} mt={2}>
-                      Storefront Classic
+                      {template.name}
                     </Title>
                     <Text size="xs" c="dimmed" mt={4}>
                       Layout dan teks dikunci kecuali badge hero. Tema dan font tetap dapat diedit.
@@ -449,28 +745,98 @@ export function BuilderWorkspace() {
                   {panelTab === "theme" ? (
                     <Stack gap="md">
                       <div>
+                        <Group justify="space-between" mb={6} align="center">
+                          <Text size="sm" fw={600}>
+                            Gambar hero
+                          </Text>
+                          {heroImageOverride ? (
+                            <Button
+                              size="compact-xs"
+                              variant="subtle"
+                              leftSection={<RotateCcw size={12} />}
+                              onClick={() => {
+                                setHeroImageOverride(null);
+                                setHeroImageError(null);
+                              }}
+                            >
+                              Hapus
+                            </Button>
+                          ) : null}
+                        </Group>
+                        <FileInput
+                          placeholder={
+                            templateSupportsHeroImage(template.id)
+                              ? "Unggah gambar (.jpg, .png, .webp)"
+                              : "Tidak tersedia untuk template ini"
+                          }
+                          accept="image/png,image/jpeg,image/webp"
+                          leftSection={<Upload size={14} />}
+                          value={null}
+                          onChange={handleHeroImageUpload}
+                          disabled={!templateSupportsHeroImage(template.id)}
+                          clearable={false}
+                        />
+                        {heroImageError ? (
+                          <Text size="xs" c="red" mt={4}>
+                            {heroImageError}
+                          </Text>
+                        ) : (
+                          <Text size="xs" c="dimmed" mt={4}>
+                            {templateSupportsHeroImage(template.id)
+                              ? heroImageOverride
+                                ? "Gambar hero akan diganti dengan unggahan ini saat preview dan publish."
+                                : "Gambar hero saat ini diambil dari produk pertama. Maks. 5 MB."
+                              : "Template ini tidak memakai gambar hero statis, jadi unggahan dinonaktifkan."}
+                          </Text>
+                        )}
+                        {heroImageOverride ? (
+                          <div className="hero-upload-preview" aria-hidden>
+                            <img src={heroImageOverride} alt="" />
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div>
                         <Text size="sm" fw={600} mb={6}>
                           Palet preset
                         </Text>
-                        <SimpleGrid cols={2} spacing="xs">
-                          {colorSchemes.map((preset) => (
-                            <UnstyledButton
-                              key={preset.id}
-                              className={`palette-swatch ${scheme.id === preset.id ? "is-selected" : ""}`}
-                              onClick={() => setScheme(preset)}
-                            >
-                              <div className="palette-strip">
-                                <span style={{ background: preset.brand }} />
-                                <span style={{ background: preset.brandStrong }} />
-                                <span style={{ background: preset.accent }} />
-                                <span style={{ background: preset.pageBg, border: "1px solid #d9dee7" }} />
-                              </div>
-                              <Text size="xs" fw={600} mt={6}>
-                                {preset.name}
-                              </Text>
-                            </UnstyledButton>
-                          ))}
-                        </SimpleGrid>
+                        <Select
+                          value={visibleColorSchemes.some((preset) => preset.id === scheme.id) ? scheme.id : null}
+                          placeholder={scheme.id === "custom" ? "Custom colors" : "Choose palette"}
+                          data={visibleColorSchemes.map((preset) => ({ label: preset.name, value: preset.id }))}
+                          onChange={(value) => {
+                            const next = colorSchemes.find((preset) => preset.id === value);
+                            if (next) setScheme(next);
+                          }}
+                          allowDeselect={false}
+                          renderOption={({ option }) => {
+                            const preset = colorSchemes.find((item) => item.id === option.value);
+                            return (
+                              <Group gap="xs" wrap="nowrap">
+                                <span className="palette-select-strip" aria-hidden>
+                                  {preset ? (
+                                    <>
+                                      <i style={{ background: preset.brand }} />
+                                      <i style={{ background: preset.brandStrong }} />
+                                      <i style={{ background: preset.accent }} />
+                                      <i style={{ background: preset.pageBg }} />
+                                    </>
+                                  ) : null}
+                                </span>
+                                <span>{option.label}</span>
+                              </Group>
+                            );
+                          }}
+                          leftSection={
+                            <span className="palette-select-strip compact" aria-hidden>
+                              <i style={{ background: scheme.brand }} />
+                              <i style={{ background: scheme.brandStrong }} />
+                              <i style={{ background: scheme.accent }} />
+                              <i style={{ background: scheme.pageBg }} />
+                            </span>
+                          }
+                          leftSectionWidth={70}
+                        />
                       </div>
 
                       <div>
@@ -517,25 +883,38 @@ export function BuilderWorkspace() {
                             Reset
                           </Button>
                         </Group>
-                        <Stack gap="xs">
-                          {COLOR_FIELDS.map((field) => (
-                            <ColorInput
-                              key={field.key}
-                              label={field.label}
-                              description={field.help}
-                              value={scheme[field.key] as string}
-                              onChange={(value) => updateColorField(field.key, value)}
-                              format="hex"
-                              swatches={[
-                                "#0f766e", "#3730a3", "#166534", "#be185d",
-                                "#1e1b4b", "#f59f00", "#fb7185", "#38bdf8",
-                                "#84cc16", "#f97316", "#171717", "#ffffff",
-                              ]}
-                              swatchesPerRow={6}
-                              withEyeDropper
-                            />
+                        <Accordion multiple defaultValue={["text", "brand"]} variant="separated" radius="md">
+                          {COLOR_FIELD_GROUPS.map((group) => (
+                            <Accordion.Item value={group.value} key={group.value}>
+                              <Accordion.Control>{group.label}</Accordion.Control>
+                              <Accordion.Panel>
+                                <Stack gap="xs">
+                                  {group.fields.map((key) => {
+                                    const field = colorFieldByKey.get(key);
+                                    if (!field) return null;
+                                    return (
+                                      <ColorInput
+                                        key={field.key}
+                                        label={field.label}
+                                        description={field.help}
+                                        value={scheme[field.key] as string}
+                                        onChange={(value) => updateColorField(field.key, value)}
+                                        format="hex"
+                                        swatches={[
+                                          "#0f766e", "#3730a3", "#166534", "#be185d",
+                                          "#1e1b4b", "#f59f00", "#fb7185", "#38bdf8",
+                                          "#84cc16", "#f97316", "#171717", "#ffffff",
+                                        ]}
+                                        swatchesPerRow={6}
+                                        withEyeDropper
+                                      />
+                                    );
+                                  })}
+                                </Stack>
+                              </Accordion.Panel>
+                            </Accordion.Item>
                           ))}
-                        </Stack>
+                        </Accordion>
                       </div>
                     </Stack>
                   ) : null}
@@ -553,6 +932,7 @@ export function BuilderWorkspace() {
       <Modal opened={Boolean(previewTemplate)} onClose={() => setPreviewTemplate(null)} size="90vw" title={previewTemplateData.name}>
         <div className="template-modal-preview" style={themeStyle}>
           <StorefrontPreview
+            templateId={previewTemplateData.id}
             storeName={storeName}
             logoUrl={logoUrl}
             storeId={storeInfo?.storeId || storeId}
@@ -616,8 +996,34 @@ export function BuilderWorkspace() {
             <>
               <Text size="sm">
                 Publish akan menyimpan snapshot edit saat ini, termasuk penggantian teks, bagian tersembunyi, dan skema
-                warna, lalu membuat route aktif di <code>/preview/{storeId || "[store-id]"}</code>.
+                warna, lalu membuat link aktif di <code>{STOREFRONT_BASE_URL}/nama-toko</code>.
               </Text>
+              <TextInput
+                label="Nama link storefront"
+                description="Gunakan huruf kecil, angka, dan tanda hubung. Nama ini harus unik."
+                placeholder="bosqueshop"
+                value={customStoreName}
+                onChange={(event) => setCustomStoreName(normalizeCustomStoreName(event.currentTarget.value))}
+                error={aliasStatus === "taken" || aliasStatus === "invalid" || aliasStatus === "error" ? aliasMessage : null}
+                rightSection={
+                  aliasStatus === "available" ? (
+                    <Check size={16} color="var(--mantine-color-teal-6)" />
+                  ) : aliasStatus === "checking" ? (
+                    <Loader size="xs" />
+                  ) : null
+                }
+              />
+              {customStoreName ? (
+                <Text size="xs" c={aliasStatus === "available" ? "teal" : "dimmed"}>
+                  {customStoreUri(normalizeCustomStoreName(customStoreName))}
+                  {aliasStatus === "available" ? " - tersedia" : aliasMessage ? ` - ${aliasMessage}` : ""}
+                </Text>
+              ) : null}
+              {publishError ? (
+                <Alert color="red" icon={<AlertTriangle size={14} />}>
+                  {publishError}
+                </Alert>
+              ) : null}
               <Text size="xs" c="dimmed">
                 Halaman publish adalah aplikasi lengkap: tautan katalog membuka halaman katalog, dan kartu produk
                 membuka halaman detail produk.
@@ -626,7 +1032,12 @@ export function BuilderWorkspace() {
                 <Button variant="default" onClick={() => setPublishModalOpen(false)}>
                   Batal
                 </Button>
-                <Button leftSection={<Send size={14} />} onClick={publish} disabled={!storeId}>
+                <Button
+                  leftSection={<Send size={14} />}
+                  onClick={publish}
+                  disabled={!storeId || aliasStatus !== "available" || isPublishing}
+                  loading={isPublishing}
+                >
                   Publish & buka
                 </Button>
               </Group>
@@ -679,7 +1090,7 @@ function CustomUploadReviewModal({
         ) : null}
         {!confirmedCustomQa ? (
           <Alert color="yellow" icon={<AlertTriangle size={14} />}>
-            Aktifkan pilihan "Saya sudah menguji alur utama storefront" sebelum mengirim untuk review.
+            Aktifkan pilihan &quot;Saya sudah menguji alur utama storefront&quot; sebelum mengirim untuk review.
           </Alert>
         ) : null}
         <Group justify="flex-end">
@@ -739,82 +1150,124 @@ function TemplateSelection({
   onCustomZip: (file: File | null) => void;
   onConfirmCustomQa: (value: boolean) => void;
 }) {
+  type LayoutFilter = "all" | TemplateLayout;
+  const [category, setCategory] = useState<LayoutFilter>("all");
+  const standardTemplates = templates.filter((template) => template.id !== "custom-upload");
+  const visibleTemplates = standardTemplates.filter((template) => {
+    if (category === "all") return true;
+    return template.layout === category;
+  });
+  const layoutCount = (layout: TemplateLayout) =>
+    standardTemplates.filter((template) => template.layout === layout).length;
+  const categories: { value: LayoutFilter; label: string; count: number }[] = [
+    { value: "all", label: "Semua", count: standardTemplates.length },
+    { value: "full-home", label: TEMPLATE_LAYOUT_LABEL["full-home"], count: layoutCount("full-home") },
+    { value: "catalogue-first", label: TEMPLATE_LAYOUT_LABEL["catalogue-first"], count: layoutCount("catalogue-first") },
+  ];
+
   return (
-    <section className={`template-page ${disabled ? "is-disabled" : ""}`}>
-      <header className="template-header">
-        <div>
-          <Badge color={storeId ? "teal" : "gray"}>{storeId ? "Toko terhubung" : "Store ID diperlukan"}</Badge>
-          <Title order={1} mt="sm">
-            Pilih template storefront
-          </Title>
-          <Text c="dimmed" maw={760}>
-            Pilih template Storepage, preview dengan data toko publik, lalu lanjutkan ke editor warna dan teks satu
-            halaman penuh. Unggahan JavaScript kustom memerlukan review admin sebelum deploy.
-          </Text>
+    <section className={`template-catalogue-page ${disabled ? "is-disabled" : ""} pb-0`}>
+      <div className="catalogue-toolbar">
+        <div className="catalogue-brand">
+          <Link href="/" aria-label="e-talase" className="catalogue-wordmark">
+            <img src={etalaseLogo.src} alt="e-talase" />
+          </Link>
+          <span className="catalogue-back">Template storefront</span>
         </div>
-        <Group>
-          <Button component="a" href="/docs" variant="outline" leftSection={<BookOpen size={16} />}>
+        <Group gap="xs">
+          {/* <Button component="a" href="/docs" variant="subtle" color="dark" leftSection={<BookOpen size={16} />}>
             Dokumentasi SDK
-          </Button>
-          <Button leftSection={<KeyRound size={16} />} onClick={onOpenKeyModal}>
+          </Button> */}
+          <Button leftSection={<KeyRound size={16} />} onClick={onOpenKeyModal} color={storeId ? "teal" : "dark"}>
             {storeId ? "Ubah Store ID" : "Masukkan Store ID"}
           </Button>
         </Group>
+      </div>
+
+      <header className="catalogue-hero">
+        <Badge color={storeId ? "teal" : "gray"} variant="light">
+          {storeId ? "Toko terhubung" : "Store ID diperlukan"}
+        </Badge>
+        <Title order={1}>Pilih tampilan toko, lalu jadikan milikmu.</Title>
+        <Text>
+          Template di halaman ini adalah template builder asli. Preview memakai data toko kamu, lalu ubah warna, font, dan teks sesuai seleramu. Upload dan publish untuk menghubungkan ke toko kamu di aplikasi e-talase.
+        </Text>
+        <div className="catalogue-filter-row">
+          {categories.map((item) => {
+            const active = category === item.value;
+            return (
+              <button
+                key={item.value}
+                className={`catalogue-filter-chip ${active ? "is-active" : ""}`}
+                onClick={() => setCategory(item.value)}
+                type="button"
+              >
+                {item.label}
+                <span>{item.count}</span>
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       {loadState === "loading" ? (
-        <Alert color="blue" mx="auto" maw={1180}>
+        <Alert color="blue" mx="auto" maw={1180} mb="md">
           Memuat data toko publik...
         </Alert>
       ) : null}
       {loadState === "error" && error ? (
-        <Alert color="red" icon={<AlertTriangle size={16} />} mx="auto" maw={1180}>
+        <Alert color="red" icon={<AlertTriangle size={16} />} mx="auto" maw={1180} mb="md">
           {error}
         </Alert>
       ) : null}
 
-      <div className="template-grid">
-        {templates
-          .filter((template) => template.id !== "custom-upload")
-          .map((template) => (
-            <Paper className="template-card" key={template.id} withBorder>
-              <div className="template-snapshot" aria-hidden>
-                <div className="snapshot-nav" />
-                <div className="snapshot-hero">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <div className="snapshot-grid">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-              </div>
-              <Stack p="lg">
-                <Group justify="space-between">
+      <div className="catalogue-grid">
+        {visibleTemplates.map((template) => (
+          <Paper className="catalogue-template-card" key={template.id} withBorder>
+            <button
+              className="catalogue-card-thumb"
+              type="button"
+              disabled={disabled}
+              onClick={() => onPreview(template.id)}
+              aria-label={`Preview ${template.name}`}
+            >
+              <img src={(TEMPLATE_SCREENSHOTS[template.id] ?? splashImage).src} alt={`Pratinjau ${template.name}`} />
+              <span className="catalogue-card-overlay">Pratinjau & pilih →</span>
+            </button>
+            <Stack p="lg" gap="sm" className="catalogue-template-body">
+              <Group justify="space-between" align="flex-start" wrap="nowrap">
+                <div>
                   <Title order={3}>{template.name}</Title>
-                  <Badge color="teal">{template.status}</Badge>
-                </Group>
-                <Text size="sm" c="dimmed">
-                  {template.description}
-                </Text>
-                <Text size="sm">
-                  Referensi: <strong>{template.source}</strong>
-                </Text>
-                <Group grow>
-                  <Button variant="outline" leftSection={<Maximize2 size={16} />} disabled={disabled} onClick={() => onPreview(template.id)}>
-                    Preview
-                  </Button>
-                  <Button disabled={disabled} onClick={() => onSelect(template.id)}>
-                    Pilih
-                  </Button>
-                </Group>
-              </Stack>
-            </Paper>
-          ))}
+                  <Text size="xs" c="dimmed" mt={4}>
+                    {template.capabilities.slice(0, 2).join(" · ")}
+                  </Text>
+                </div>
+                <Badge
+                  color={template.layout === "catalogue-first" ? "grape" : "teal"}
+                  variant="light"
+                >
+                  {template.layout ? TEMPLATE_LAYOUT_LABEL[template.layout] : template.status}
+                </Badge>
+              </Group>
+              <Text size="sm" c="dimmed" lineClamp={3}>
+                {template.description}
+              </Text>
+              <Group grow mt="xs" className="catalogue-template-actions">
+                <Button variant="outline" color="dark" leftSection={<Maximize2 size={16} />} disabled={disabled} onClick={() => onPreview(template.id)}>
+                  Preview
+                </Button>
+                <Button color="dark" disabled={disabled} onClick={() => onSelect(template.id)}>
+                  Pilih
+                </Button>
+              </Group>
+            </Stack>
+          </Paper>
+        ))}
 
-        <Paper className="template-card upload-card" withBorder>
+      </div>
+
+      <div className="w-[80%] max-w-4xl mx-auto mt-[-30] mb-20">
+        <Paper className="catalogue-template-card upload-card" withBorder>
           <Stack p="lg" h="100%" justify="space-between">
             <div>
               <Group justify="space-between" mb="sm">
@@ -857,6 +1310,19 @@ function TemplateSelection({
           </Paper>
         </div>
       ) : null}
+
+      <footer className="catalogue-footer">
+        <Link href="/" aria-label="e-talase">
+          <img src={etalaseLogo.src} alt="e-talase" />
+        </Link>
+        <div className="catalogue-footer-copy">
+          © {new Date().getFullYear()} · Storefront Builder · Dibuat untuk merchant e-talase
+        </div>
+        <div className="catalogue-footer-links">
+          {/* <Link href="/docs">Dokumentasi SDK</Link> */}
+          <Link href="/">Beranda</Link>
+        </div>
+      </footer>
     </section>
   );
 }

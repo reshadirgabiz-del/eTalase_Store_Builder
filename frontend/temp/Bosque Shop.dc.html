@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  img{display:block;max-width:100%}
+  button{font-family:inherit}
+  ::selection{background:var(--accent);color:var(--on-accent)}
+  /* ============================================================
+     BOSQUE SHOP — COLOR SYSTEM  (edit these to recolor the site)
+     Roles are grouped: Surfaces · Brand · Accent · Text · Lines
+     Switch the whole theme with the palette dots, or hand-edit a block.
+     ============================================================ */
+  :root, [data-palette="blush"]{
+    /* Surfaces */
+    --bg:        oklch(0.985 0.008 25);
+    --surface:   oklch(0.997 0.004 30);
+    --surface-2: oklch(0.965 0.014 22);
+    /* Brand */
+    --primary:     oklch(0.44 0.10 6);
+    --primary-700: oklch(0.355 0.095 6);
+    --on-primary:  oklch(0.99 0.006 25);
+    /* Accent */
+    --accent:      oklch(0.64 0.15 12);
+    --accent-soft: oklch(0.925 0.040 14);
+    --on-accent:   oklch(0.99 0.005 20);
+    /* Text */
+    --text:   oklch(0.27 0.030 350);
+    --text-2: oklch(0.44 0.022 350);
+    --text-3: oklch(0.605 0.016 350);
+    /* Lines */
+    --border: oklch(0.905 0.014 18);
+    --ring:   oklch(0.86 0.02 16);
+  }
+  [data-palette="mauve"]{
+    --bg:        oklch(0.984 0.007 320);
+    --surface:   oklch(0.997 0.004 320);
+    --surface-2: oklch(0.962 0.013 320);
+    --primary:     oklch(0.40 0.093 322);
+    --primary-700: oklch(0.32 0.088 322);
+    --on-primary:  oklch(0.99 0.005 320);
+    --accent:      oklch(0.585 0.14 330);
+    --accent-soft: oklch(0.922 0.038 326);
+    --on-accent:   oklch(0.99 0.005 320);
+    --text:   oklch(0.265 0.028 320);
+    --text-2: oklch(0.44 0.020 320);
+    --text-3: oklch(0.60 0.015 320);
+    --border: oklch(0.905 0.012 320);
+    --ring:   oklch(0.86 0.02 322);
+  }
+  [data-palette="sage"]{
+    --bg:        oklch(0.985 0.010 132);
+    --surface:   oklch(0.997 0.005 120);
+    --surface-2: oklch(0.960 0.016 132);
+    --primary:     oklch(0.42 0.058 152);
+    --primary-700: oklch(0.335 0.054 152);
+    --on-primary:  oklch(0.99 0.008 120);
+    --accent:      oklch(0.60 0.090 152);
+    --accent-soft: oklch(0.922 0.042 140);
+    --on-accent:   oklch(0.99 0.008 120);
+    --text:   oklch(0.275 0.022 150);
+    --text-2: oklch(0.43 0.016 150);
+    --text-3: oklch(0.60 0.013 150);
+    --border: oklch(0.905 0.016 140);
+    --ring:   oklch(0.86 0.024 145);
+  }
+  [data-palette="terracotta"]{
+    --bg:        oklch(0.985 0.010 72);
+    --surface:   oklch(0.997 0.005 70);
+    --surface-2: oklch(0.960 0.016 70);
+    --primary:     oklch(0.40 0.050 52);
+    --primary-700: oklch(0.32 0.048 52);
+    --on-primary:  oklch(0.98 0.012 72);
+    --accent:      oklch(0.635 0.140 46);
+    --accent-soft: oklch(0.922 0.046 56);
+    --on-accent:   oklch(0.99 0.008 70);
+    --text:   oklch(0.275 0.022 60);
+    --text-2: oklch(0.43 0.016 60);
+    --text-3: oklch(0.60 0.013 62);
+    --border: oklch(0.905 0.014 66);
+    --ring:   oklch(0.86 0.022 60);
+  }
+  @keyframes bq-fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div data-palette="{{ palette }}" style="min-height:100vh;background:var(--bg);color:var(--text-2);font-family:'Hanken Grotesk',sans-serif;font-size:16px;line-height:1.55">
+
+  <!-- ===================== HEADER ===================== -->
+  <header style="position:sticky;top:0;z-index:50;background:color-mix(in oklab, var(--surface) 86%, transparent);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--border)">
+    <div style="max-width:1240px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:24px">
+      <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0">
+        <img src="assets/logo.png" alt="Bosque Shop logo" style="width:42px;height:42px;border-radius:10px;object-fit:cover;box-shadow:0 1px 4px color-mix(in oklab,var(--primary) 22%,transparent)">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.01em;color:var(--text);white-space:nowrap">Bosque Shop</span>
+      </button>
+
+      <nav style="margin:0 auto;display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px">
+        <button onClick="{{ goHome }}" style="{{ navHomeStyle }}">Home</button>
+        <button onClick="{{ goCatalogue }}" style="{{ navCatStyle }}">Catalogue</button>
+        <button onClick="{{ goAbout }}" style="{{ navAboutStyle }}">About</button>
+      </nav>
+
+      <div style="display:flex;align-items:center;gap:18px">
+        <div title="Switch palette" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface);border:1px solid var(--border);border-radius:999px">
+          <sc-for list="{{ palettes }}" as="p" hint-placeholder-count="4">
+            <button onClick="{{ p.set }}" title="{{ p.label }}" style="{{ p.dotStyle }}"></button>
+          </sc-for>
+        </div>
+        <button onClick="{{ goCatalogue }}" style="position:relative;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ cart }}</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== HOME ===================== -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main>
+
+    <!-- Hero -->
+    <section style="position:relative;overflow:hidden;background:linear-gradient(180deg, var(--accent-soft) 0%, var(--bg) 62%)">
+      <div style="max-width:1240px;margin:0 auto;padding:72px 32px 56px;text-align:center">
+        <span style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--accent);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Kérastase Official Partner · Est. 2012</span>
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.03em;line-height:.98;color:var(--text);font-size:clamp(46px,8vw,104px);margin:22px 0 0">Bosque Shop</h1>
+        <p style="max-width:620px;margin:20px auto 0;font-size:18px;color:var(--text-2)">Authentic salon hair care, tried by us and priced below the counter. <span style="color:var(--accent);font-weight:600">100% original</span>, with free consultation.</p>
+
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:30px;flex-wrap:wrap">
+          <button onClick="{{ goCatalogue }}" style="padding:15px 30px;border-radius:999px;border:none;background:var(--primary);color:var(--on-primary);font-weight:600;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;gap:10px">Shop the catalogue
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+          <a href="https://instagram.com" target="_blank" rel="noopener" style="padding:15px 30px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:15px;cursor:pointer;text-decoration:none">Free consultation</a>
+        </div>
+
+        <!-- Featured product -->
+        <div style="position:relative;max-width:760px;margin:54px auto 0;display:flex;align-items:center;justify-content:center;gap:24px">
+          <button onClick="{{ prevFeat }}" aria-label="Previous" style="flex:none;width:52px;height:52px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px color-mix(in oklab,var(--primary) 8%,transparent)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button onClick="{{ openFeatured }}" style="flex:1;border:none;cursor:pointer;background:linear-gradient(180deg, var(--surface) 0%, var(--accent-soft) 100%);border-radius:30px;padding:34px;box-shadow:0 30px 70px -28px color-mix(in oklab,var(--primary) 40%,transparent);display:flex;flex-direction:column;align-items:center">
+            <div style="width:230px;height:330px;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 12px 30px -14px color-mix(in oklab,var(--primary) 30%,transparent)">
+              <img src="{{ featured.img }}" alt="{{ featured.name }}" style="width:100%;height:100%;object-fit:contain">
+            </div>
+            <span style="margin-top:22px;font-weight:600;color:var(--text-3);font-size:13px;letter-spacing:.04em;text-transform:uppercase">{{ featured.cat }}</span>
+            <span style="margin-top:6px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;color:var(--text)">{{ featured.name }}</span>
+            <span style="margin-top:8px;font-weight:700;font-size:18px;color:var(--accent)">{{ featured.price }}</span>
+          </button>
+          <button onClick="{{ nextFeat }}" aria-label="Next" style="flex:none;width:52px;height:52px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px color-mix(in oklab,var(--primary) 8%,transparent)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits strip -->
+    <section style="max-width:1240px;margin:0 auto;padding:0 32px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:-28px;position:relative;z-index:2">
+        <sc-for list="{{ benefits }}" as="b" hint-placeholder-count="3">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 10px 30px -22px color-mix(in oklab,var(--primary) 50%,transparent)">
+            <span style="flex:none;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Bricolage Grotesque',sans-serif">{{ b.mark }}</span>
+            <div>
+              <div style="font-weight:700;color:var(--text);font-size:15px">{{ b.title }}</div>
+              <div style="font-size:13.5px;color:var(--text-3)">{{ b.sub }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- Shop by category -->
+    <section style="max-width:1240px;margin:0 auto;padding:76px 32px 8px">
+      <div style="text-align:center;margin-bottom:34px">
+        <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:clamp(30px,4vw,46px);margin:0">Shop by category</h2>
+        <p style="margin:10px 0 0;color:var(--text-3);font-size:17px">Explore curated collections from our store.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <sc-for list="{{ categories }}" as="c" hint-placeholder-count="2">
+          <button onClick="{{ c.open }}" style="position:relative;border:none;cursor:pointer;padding:0;border-radius:26px;overflow:hidden;height:420px;background:#fff;text-align:left;box-shadow:0 24px 60px -34px color-mix(in oklab,var(--primary) 55%,transparent)">
+            <img src="{{ c.img }}" alt="{{ c.label }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:26px">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg, transparent 38%, color-mix(in oklab,var(--primary) 86%,transparent) 100%)"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:28px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;color:var(--on-primary);text-transform:capitalize;line-height:1">{{ c.label }}</div>
+              <div style="color:color-mix(in oklab,var(--on-primary) 80%,transparent);font-size:14px;margin-top:4px">{{ c.count }}</div>
+              <div style="margin-top:16px;display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border-radius:999px;background:var(--surface);color:var(--text);font-weight:600;font-size:14px">Explore now
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+      <div style="text-align:center;margin-top:30px">
+        <button onClick="{{ goCatalogue }}" style="padding:13px 26px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:600;font-size:15px;cursor:pointer">See all products</button>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" style="max-width:1240px;margin:0 auto;padding:72px 32px">
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:30px;padding:30px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center">
+        <div style="border-radius:22px;overflow:hidden;box-shadow:0 20px 50px -28px color-mix(in oklab,var(--primary) 55%,transparent)">
+          <img src="assets/marble.png" alt="Bosqueshop, established 2012" style="width:100%;height:100%;object-fit:cover;aspect-ratio:4/3">
+        </div>
+        <div style="padding:8px 8px 8px 0">
+          <span style="color:var(--accent);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase">About us</span>
+          <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:clamp(28px,3.4vw,42px);margin:10px 0 16px">A little salon, a big promise</h2>
+          <p style="font-size:17px;color:var(--text-2);margin:0 0 24px">Since 2012 we've curated authentic, salon-grade hair care — every product tried by us, guaranteed original, and priced below the counter. Free consultation, always.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span style="padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:14px;color:var(--text-2)">@bosqueshop.ofc</span>
+            <span style="padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:14px;color:var(--text-2)">+62 812-9874-9554</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ===================== CATALOGUE ===================== -->
+  <sc-if value="{{ isCatalogue }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1240px;margin:0 auto;padding:54px 32px 20px">
+    <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:clamp(38px,5vw,58px);margin:0">Catalogue</h1>
+    <p style="margin:8px 0 28px;color:var(--text-3);font-size:18px">Browse our full collection by category.</p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-bottom:26px;margin-bottom:30px;border-bottom:1px solid var(--border)">
+      <sc-for list="{{ chips }}" as="ch" hint-placeholder-count="3">
+        <button onClick="{{ ch.set }}" style="{{ ch.style }}">{{ ch.label }}</button>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <sc-for list="{{ filtered }}" as="p" hint-placeholder-count="6">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:14px;display:flex;flex-direction:column;box-shadow:0 16px 40px -30px color-mix(in oklab,var(--primary) 55%,transparent)">
+          <button onClick="{{ p.open }}" style="border:none;cursor:pointer;padding:0;background:#fff;border-radius:14px;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center;position:relative">
+            <img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:contain;padding:6px">
+            <sc-if value="{{ p.badge }}" hint-placeholder-val="Top rated">
+              <span style="position:absolute;top:12px;left:12px;padding:6px 11px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:11.5px;font-weight:700;letter-spacing:.02em">{{ p.badge }}</span>
+            </sc-if>
+          </button>
+          <div style="padding:16px 8px 8px;display:flex;flex-direction:column;flex:1">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3)">{{ p.cat }}</span>
+            <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;color:var(--text);margin:6px 0 8px;line-height:1.2">{{ p.name }}</h3>
+            <p style="font-size:14px;color:var(--text-3);margin:0 0 18px;line-height:1.5">{{ p.desc }}</p>
+            <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;color:var(--text)">{{ p.price }}</span>
+              <button onClick="{{ p.open }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;border:none;background:var(--primary);color:var(--on-primary);font-weight:600;font-size:14px;cursor:pointer">View
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ===================== PRODUCT ===================== -->
+  <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1240px;margin:0 auto;padding:40px 32px 20px">
+    <button onClick="{{ goCatalogue }}" style="display:inline-flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;color:var(--text-3);font-weight:600;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:0 0 26px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Back to store
+    </button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:26px;overflow:hidden;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;box-shadow:0 26px 60px -34px color-mix(in oklab,var(--primary) 55%,transparent)">
+        <img src="{{ selected.img }}" alt="{{ selected.name }}" style="width:100%;height:100%;object-fit:contain;padding:18px">
+      </div>
+      <div>
+        <sc-if value="{{ selected.stock }}" hint-placeholder-val="ONLY 1 LEFT">
+          <span style="color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase">{{ selected.stock }}</span>
+        </sc-if>
+        <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:clamp(32px,4vw,48px);margin:10px 0 18px;line-height:1.05">{{ selected.name }}</h1>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:30px;color:var(--text)">{{ selected.price }}</span>
+          <sc-if value="{{ selected.old }}" hint-placeholder-val="Rp 550.000">
+            <span style="color:var(--text-3);text-decoration:line-through;font-size:18px">{{ selected.old }}</span>
+          </sc-if>
+          <sc-if value="{{ selected.off }}" hint-placeholder-val="-31%">
+            <span style="padding:5px 11px;border-radius:8px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:14px">{{ selected.off }}</span>
+          </sc-if>
+        </div>
+        <p style="font-size:16px;color:var(--text-2);white-space:pre-line;margin:0 0 28px;padding-bottom:28px;border-bottom:1px solid var(--border)">{{ selected.long }}</p>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <span style="font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)">Quantity</span>
+          <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:5px">
+            <button onClick="{{ decQty }}" aria-label="Decrease" style="width:38px;height:38px;border-radius:50%;border:none;background:var(--surface-2);color:var(--text);font-size:20px;cursor:pointer">−</button>
+            <span style="min-width:36px;text-align:center;font-weight:700;color:var(--text);font-size:17px">{{ qty }}</span>
+            <button onClick="{{ incQty }}" aria-label="Increase" style="width:38px;height:38px;border-radius:50%;border:none;background:var(--surface-2);color:var(--text);font-size:20px;cursor:pointer">+</button>
+          </div>
+        </div>
+        <button onClick="{{ addToCart }}" style="width:100%;padding:18px;border-radius:16px;border:none;background:var(--primary);color:var(--on-primary);font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Add to cart — {{ selected.price }}
+        </button>
+        <div style="display:flex;gap:22px;margin-top:22px;flex-wrap:wrap">
+          <sc-for list="{{ trust }}" as="t" hint-placeholder-count="3">
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text-3)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{ t }}
+            </span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ===================== COLOR SYSTEM ===================== -->
+  <sc-if value="{{ isPalette }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1240px;margin:0 auto;padding:54px 32px 20px">
+    <span style="color:var(--accent);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase">Design reference</span>
+    <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:clamp(34px,5vw,54px);margin:8px 0 6px">Color system</h1>
+    <p style="margin:0 0 30px;color:var(--text-3);font-size:18px;max-width:640px">Every color is a named token grouped by role. Switch a whole theme with the dots in the header, or hand-edit a token block in the stylesheet to make it your own.</p>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:38px">
+      <sc-for list="{{ palettes }}" as="p" hint-placeholder-count="4">
+        <button onClick="{{ p.set }}" style="{{ p.chipStyle }}">
+          <span style="width:16px;height:16px;border-radius:50%;background:{{ p.swatch }};display:inline-block"></span>{{ p.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:30px">
+      <sc-for list="{{ tokenGroups }}" as="g" hint-placeholder-count="5">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+            <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;color:var(--text);margin:0">{{ g.group }}</h2>
+            <span style="height:1px;flex:1;background:var(--border)"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px">
+            <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="3">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+                <div style="height:78px;background:{{ t.bg }};border-bottom:1px solid var(--border)"></div>
+                <div style="padding:12px 14px">
+                  <div style="font-weight:700;color:var(--text);font-size:14px">{{ t.role }}</div>
+                  <div style="font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12px;color:var(--text-3);margin-top:3px">{{ t.var }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer style="margin-top:40px;background:var(--primary);color:var(--on-primary)">
+    <div style="max-width:1240px;margin:0 auto;padding:54px 32px 40px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <img src="assets/logo.png" alt="Bosque Shop" style="width:40px;height:40px;border-radius:10px;object-fit:cover">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px">Bosque Shop</span>
+        </div>
+        <p style="margin:0;max-width:340px;color:color-mix(in oklab,var(--on-primary) 78%,transparent);font-size:15px">Authentic salon hair care, tried by us and priced below the counter. 100% original · Free consultation.</p>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;color:color-mix(in oklab,var(--on-primary) 70%,transparent)">Shop</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button onClick="{{ goCatalogue }}" style="background:none;border:none;color:var(--on-primary);text-align:left;cursor:pointer;font-size:15px;padding:0">Catalogue</button>
+          <button onClick="{{ goAbout }}" style="background:none;border:none;color:var(--on-primary);text-align:left;cursor:pointer;font-size:15px;padding:0">About</button>
+          <button onClick="{{ goPalette }}" style="background:none;border:none;color:var(--on-primary);text-align:left;cursor:pointer;font-size:15px;padding:0">Color system</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;color:color-mix(in oklab,var(--on-primary) 70%,transparent)">Contact</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:15px">
+          <a href="https://instagram.com" target="_blank" rel="noopener" style="color:var(--on-primary);text-decoration:none">Instagram</a>
+          <a href="https://wa.me/6281298749554" target="_blank" rel="noopener" style="color:var(--on-primary);text-decoration:none">WhatsApp</a>
+          <span style="color:color-mix(in oklab,var(--on-primary) 78%,transparent)">+62 812-9874-9554</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid color-mix(in oklab,var(--on-primary) 16%,transparent)">
+      <div style="max-width:1240px;margin:0 auto;padding:18px 32px;font-size:13px;color:color-mix(in oklab,var(--on-primary) 66%,transparent)">© 2026 Bosque Shop. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;palette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;blush&quot;,&quot;mauve&quot;,&quot;sage&quot;,&quot;terracotta&quot;],&quot;default&quot;:&quot;blush&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { view: 'home', palette: null, cat: 'all', qty: 1, cart: 2, featIdx: 0, selId: 'bain' };
+
+  get pal(){ return this.state.palette || this.props.palette || 'blush'; }
+
+  products(){
+    return [
+      { id:'bain', name:'Kérastase Bain Prevention', cat:'shampoo', img:'assets/bain.png', price:'Rp 379.900', old:'Rp 550.000', off:'-31%', stock:'Only 1 left', badge:'Top rated',
+        desc:'Treatment shampoo that cleanses and revives a scalp prone to hair fall.',
+        long:'Kérastase Treatment Rambut Rontok Shampoo — Bain Prévention 250ml.\nCleanses and cares for a scalp with hair-fall concerns. Hydrates, revitalises and keeps the scalp healthy for new growth.\n\nHow to use:\n• Use daily through the 42-day intensive care period, then as a regular maintenance shampoo.\n• Apply evenly to scalp and wet lengths.\n• Massage to a lather, rinse, repeat.' },
+      { id:'symbiose', name:'Kérastase Symbiose Serum Anti-Ketombe', cat:'shampoo', img:'assets/symbiose.png', price:'Rp 479.900', old:'', off:'', stock:'In stock', badge:'Top rated',
+        desc:'Intensive anti-dandruff night serum for wet or dry flaking.',
+        long:'Intensive anti-dandruff cellular night serum that tackles both wet and dry flaking. Gentle enough for daily use, it soothes the scalp while you sleep.' },
+      { id:'ciment', name:'Kérastase Ciment Thermique 150ml', cat:'conditioner', img:'assets/ciment.png', price:'Rp 499.900', old:'', off:'', stock:'In stock', badge:'Top rated',
+        desc:'Resurfacing heat-protecting milk for fragile, damaged hair.',
+        long:'Resurfacing strengthening milk — blow-dry care for damaged hair. Protects fragile, weakened lengths from heat while rebuilding the fibre. Leave-in, no rinse.' },
+      { id:'gloss', name:'Kérastase Gloss Absolu Bain Hydra-Glaze', cat:'conditioner', img:'assets/gloss.png', price:'Rp 659.900', old:'', off:'', stock:'In stock', badge:'',
+        desc:'Glaze-effect shine bath with wild rose oil + glycolic acid.',
+        long:'Gloss-enhancing bath for long, dull lengths. Hyaluronic acid, glycolic acid and wild rose oil leave hair glazed, glossy and smooth.' },
+      { id:'divalent', name:'Kérastase Bain Divalent', cat:'shampoo', img:'assets/divalent.png', price:'Rp 850.000', old:'', off:'', stock:'In stock', badge:'',
+        desc:'Balancing purifying shampoo for oily roots, sensitised lengths.',
+        long:'Balancing purifying shampoo that regulates excess oil at the roots while caring for sensitised lengths, for a clean, weightless finish.' },
+      { id:'genesis', name:'Kérastase Genesis Bain Nutri-Fortifiant', cat:'shampoo', img:'assets/genesis.png', price:'Rp 679.900', old:'', off:'', stock:'In stock', badge:'',
+        desc:'Anti hair-fall fortifying shampoo for weakened, breakage-prone hair.',
+        long:'Fortifying anti hair-fall shampoo with edelweiss native cells and ginger root for dry, weakened hair prone to falling due to breakage.' }
+    ];
+  }
+
+  navStyle(active){
+    return 'display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border-radius:999px;border:none;background:'+(active?'var(--primary)':'transparent')+';color:'+(active?'var(--on-primary)':'var(--text)')+";font:600 15px 'Hanken Grotesk',sans-serif;letter-spacing:.01em;cursor:pointer;transition:.2s";
+  }
+  chipStyle(active){
+    return 'padding:9px 18px;border-radius:999px;border:1px solid '+(active?'transparent':'var(--border)')+';background:'+(active?'var(--primary)':'var(--surface)')+';color:'+(active?'var(--on-primary)':'var(--text-2)')+";font:600 14px 'Hanken Grotesk',sans-serif;cursor:pointer;transition:.2s";
+  }
+
+  renderVals(){
+    const view = this.state.view, pal = this.pal;
+    const prods = this.products();
+    const cat = this.state.cat;
+    const filtered = cat === 'all' ? prods : prods.filter(p => p.cat === cat);
+    const selected = prods.find(p => p.id === this.state.selId) || prods[0];
+    const featList = ['ciment','genesis','gloss'].map(id => prods.find(p=>p.id===id));
+    const feat = featList[this.state.featIdx % featList.length];
+
+    const palDefs = [
+      { key:'blush', label:'Blush & Rosé', swatch:'oklch(0.64 0.15 12)' },
+      { key:'mauve', label:'Mauve & Plum', swatch:'oklch(0.585 0.14 330)' },
+      { key:'sage', label:'Sage & Cream', swatch:'oklch(0.60 0.09 152)' },
+      { key:'terracotta', label:'Terracotta', swatch:'oklch(0.635 0.14 46)' }
+    ];
+    const palettes = palDefs.map(p => ({
+      ...p,
+      set: () => this.setState({ palette: p.key }),
+      dotStyle: 'width:24px;height:24px;border-radius:50%;background:'+p.swatch+';border:2px solid '+(pal===p.key?'var(--text)':'transparent')+';box-shadow:0 0 0 2px var(--surface);cursor:pointer;padding:0;transition:.15s',
+      chipStyle: 'display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;border:1px solid '+(pal===p.key?'var(--text)':'var(--border)')+';background:var(--surface);color:var(--text);font:600 14px \'Hanken Grotesk\',sans-serif;cursor:pointer;transition:.2s'
+    }));
+
+    const catCounts = { conditioner: prods.filter(p=>p.cat==='conditioner').length, shampoo: prods.filter(p=>p.cat==='shampoo').length };
+    const categories = [
+      { label:'conditioner', img:'assets/ciment.png', count: catCounts.conditioner+' products', open: () => this.setState({ view:'catalogue', cat:'conditioner' }) },
+      { label:'shampoo', img:'assets/genesis.png', count: catCounts.shampoo+' products', open: () => this.setState({ view:'catalogue', cat:'shampoo' }) }
+    ];
+
+    const chips = [
+      { key:'all', label:'All' },
+      { key:'conditioner', label:'Conditioner' },
+      { key:'shampoo', label:'Shampoo' }
+    ].map(c => ({ label:c.label, set: () => this.setState({ cat:c.key }), style: this.chipStyle(cat===c.key) }));
+
+    const tokenGroups = [
+      { group:'Surfaces', items:[
+        { role:'Page background', var:'--bg', bg:'var(--bg)' },
+        { role:'Surface / cards', var:'--surface', bg:'var(--surface)' },
+        { role:'Muted surface', var:'--surface-2', bg:'var(--surface-2)' } ] },
+      { group:'Brand', items:[
+        { role:'Primary', var:'--primary', bg:'var(--primary)' },
+        { role:'Primary hover', var:'--primary-700', bg:'var(--primary-700)' },
+        { role:'On primary', var:'--on-primary', bg:'var(--on-primary)' } ] },
+      { group:'Accent', items:[
+        { role:'Accent', var:'--accent', bg:'var(--accent)' },
+        { role:'Accent soft', var:'--accent-soft', bg:'var(--accent-soft)' },
+        { role:'On accent', var:'--on-accent', bg:'var(--on-accent)' } ] },
+      { group:'Text', items:[
+        { role:'Heading', var:'--text', bg:'var(--text)' },
+        { role:'Body', var:'--text-2', bg:'var(--text-2)' },
+        { role:'Muted', var:'--text-3', bg:'var(--text-3)' } ] },
+      { group:'Lines', items:[
+        { role:'Border', var:'--border', bg:'var(--border)' },
+        { role:'Ring', var:'--ring', bg:'var(--ring)' } ] }
+    ];
+
+    return {
+      palette: pal,
+      isHome: view==='home', isCatalogue: view==='catalogue', isProduct: view==='product', isPalette: view==='palette',
+      navHomeStyle: this.navStyle(view==='home'),
+      navCatStyle: this.navStyle(view==='catalogue'),
+      navAboutStyle: this.navStyle(false),
+      cart: this.state.cart,
+      palettes,
+      // home
+      featured: feat,
+      prevFeat: () => this.setState(s => ({ featIdx: (s.featIdx + featList.length - 1) % featList.length })),
+      nextFeat: () => this.setState(s => ({ featIdx: (s.featIdx + 1) % featList.length })),
+      openFeatured: () => this.setState({ view:'product', selId: feat.id, qty:1 }),
+      benefits: [
+        { mark:'✓', title:'100% original', sub:'Guaranteed authentic, every item' },
+        { mark:'Rp', title:'Below counter price', sub:'Salon quality, friendlier price' },
+        { mark:'✦', title:'Free consultation', sub:'Personal advice before you buy' }
+      ],
+      categories,
+      // catalogue
+      chips,
+      filtered: filtered.map(p => ({ ...p, open: () => this.setState({ view:'product', selId:p.id, qty:1 }) })),
+      // product
+      selected,
+      qty: this.state.qty,
+      incQty: () => this.setState(s => ({ qty: s.qty + 1 })),
+      decQty: () => this.setState(s => ({ qty: Math.max(1, s.qty - 1) })),
+      addToCart: () => this.setState(s => ({ cart: s.cart + s.qty })),
+      trust: ['100% original', 'Authentic guaranteed', 'Free consultation'],
+      // palette page
+      tokenGroups,
+      // nav
+      goHome: () => this.setState({ view:'home' }),
+      goCatalogue: () => this.setState({ view:'catalogue', cat:'all' }),
+      goAbout: () => { this.setState({ view:'home' }); requestAnimationFrame(()=>{ const el=document.getElementById('about'); if(el){ const y = el.getBoundingClientRect().top + window.scrollY - 80; window.scrollTo({ top:y, behavior:'smooth' }); } }); },
+      goPalette: () => this.setState({ view:'palette' })
+    };
+  }
+}
+</script>
+</body>
+</html>
