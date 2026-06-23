@@ -29,7 +29,7 @@ function redirectTo(request: NextRequest, host: string) {
   return NextResponse.redirect(url);
 }
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
   const { pathname } = request.nextUrl;
 

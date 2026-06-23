@@ -7,7 +7,7 @@ This guide deploys the **eTalase Builder** as a single Next.js app served on two
 | `builder.e-talase.com` | Merchant-facing builder UI: pick template, edit theme/texts, publish |
 | `store.e-talase.com/<alias>` | Public storefront rendered from a published config |
 
-The same Next.js bundle handles both — host-based middleware (`frontend/middleware.ts`) routes requests so the builder UI is unreachable on `store.e-talase.com`.
+The same Next.js bundle handles both — host-based middleware (`frontend/middleware.ts`, exporting `middleware`) routes requests so the builder UI is unreachable on `store.e-talase.com`.
 
 Store info, settings, and products are fetched at runtime from the production eTalase API via the `etalase-module` SDK (default `https://api.e-talase.com`). The builder DB only holds two tables: `builder_owners` (auth) and `storefront_publications` (alias → publication config).
 
