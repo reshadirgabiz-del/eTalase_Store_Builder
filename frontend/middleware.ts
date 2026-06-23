@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const STORE_HOST = process.env.NEXT_PUBLIC_STORE_HOST ?? "store.e-talase.com";
 const BUILDER_HOST = process.env.NEXT_PUBLIC_BUILDER_HOST ?? "builder.e-talase.com";
 
-const BUILDER_PATH_PREFIXES = ["/docs", "/preview", "/api/auth", "/api/sdk-docs"];
+const BUILDER_PATH_PREFIXES = ["/docs", "/preview", "/templates", "/builder", "/api/auth", "/api/sdk-docs"];
 const STORE_ALLOWED_API = ["/api/stores/custom-uri"];
 
 function isStoreHost(host: string) {
@@ -41,9 +41,9 @@ export function middleware(request: NextRequest) {
       return apiAllowed ? NextResponse.next() : new NextResponse(null, { status: 404 });
     }
 
-    if (isStoreAlias(pathname)) return NextResponse.next();
-
     if (isBuilderPath(pathname)) return redirectTo(request, BUILDER_HOST);
+
+    if (isStoreAlias(pathname)) return NextResponse.next();
 
     return new NextResponse(null, { status: 404 });
   }

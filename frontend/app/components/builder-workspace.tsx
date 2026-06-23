@@ -55,6 +55,7 @@ import {
   EyeOff,
   ExternalLink,
   FileArchive,
+  HelpCircle,
   KeyRound,
   Maximize2,
   Palette,
@@ -109,6 +110,22 @@ const PUBLISH_KEY_PREFIX = "etalase-builder-publish::";
 const STORE_ID_STORAGE_KEY = "etalase-builder-store-id";
 const PUBLIC_STORE_KEY_STORAGE_KEY = "etalase-builder-public-store-key";
 const LEGACY_PUBLIC_KEY_STORAGE_KEY = "etalase-builder-public-key";
+const HOWTO_SEEN_STORAGE_KEY = "etalase-builder-howto-seen";
+
+const HOWTO_STEPS: { title: string; body: string }[] = [
+  {
+    title: "Hubungkan toko",
+    body: "Masukkan Store ID dan access key. Public key (etalase_pk_live_...) otomatis menyinkronkan toko Anda.",
+  },
+  {
+    title: "Pilih template",
+    body: "Pilih dari template siap pakai, atau unggah aplikasi kustom (zip) untuk review admin.",
+  },
+  {
+    title: "Atur tema & publish",
+    body: "Edit warna, font, dan teks langsung di preview. Publish ke link kustom di store.e-talase.com/<nama>.",
+  },
+];
 const DEMO_STORE_ID = "583e6139-c4cb-4037-beb1-0f787867ff90";
 const DEMO_PUBLIC_KEY = "etalase_pk_live_ENvGGo5xJ9KlBgdraJuSf_ThMoNwndBke6R_5ZVNv9I";
 const TEMPLATE_LOCKED = true;
@@ -188,6 +205,7 @@ export function BuilderWorkspace() {
   const [hasHydrated, setHasHydrated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthing, setIsAuthing] = useState(false);
+  const [howToModalOpen, setHowToModalOpen] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORE_ID_STORAGE_KEY) || getBuilderCookie(STORE_ID_STORAGE_KEY);
@@ -204,8 +222,15 @@ export function BuilderWorkspace() {
     setDraftStoreId(storeIdValue);
     setPublicStoreKey(storedPublicKey);
     setKeyModalOpen(!storeIdValue);
+    const howToSeen = window.localStorage.getItem(HOWTO_SEEN_STORAGE_KEY);
+    if (!howToSeen) setHowToModalOpen(true);
     setHasHydrated(true);
   }, []);
+
+  function dismissHowToModal() {
+    window.localStorage.setItem(HOWTO_SEEN_STORAGE_KEY, "1");
+    setHowToModalOpen(false);
+  }
 
   const [screen, setScreen] = useState<Screen>("templates");
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("storefront-classic");
@@ -534,12 +559,21 @@ export function BuilderWorkspace() {
         closeOnEscape={Boolean(storeId)}
         withCloseButton={Boolean(storeId)}
         centered
-        title="Hubungkan toko eTalase Anda"
+        size="md"
+        radius="lg"
+        className="builder-auth-modal"
+        title={
+          <Group gap="sm" wrap="nowrap" align="center">
+            <KeyRound size={18} color="var(--mantine-color-teal-7)" />
+            <span>Hubungkan toko eTalase Anda</span>
+          </Group>
+        }
       >
-        <Stack>
-          <Text size="sm" c="dimmed">
-            Masukkan Store ID dan access key toko. Jika belum ada secret key khusus, gunakan public key eTalase untuk menyinkronkan toko dari SDK.
-          </Text>
+        <Stack gap="md">
+          <div className="auth-modal-hint">
+            Masukkan Store ID dan access key toko. Jika belum ada secret key khusus, gunakan public key eTalase
+            (etalase_pk_live_...) untuk menyinkronkan toko dari SDK secara otomatis.
+          </div>
           <TextInput
             label="Store ID"
             placeholder="00000000-0000-0000-0000-000000000000"
@@ -589,6 +623,56 @@ export function BuilderWorkspace() {
         customZip={customZip}
       />
 
+      <Modal
+        opened={howToModalOpen}
+        onClose={dismissHowToModal}
+        centered
+        size="lg"
+        radius="lg"
+        className="howto-modal"
+        title={
+          <Group gap="sm" wrap="nowrap" align="center">
+            <Sparkles size={18} color="var(--mantine-color-teal-7)" />
+            <span>Selamat datang di Storefront Builder</span>
+          </Group>
+        }
+      >
+        <Stack gap="md">
+          <Text size="sm" c="dimmed">
+            Bangun storefront eTalase Anda dalam 3 langkah singkat. Anda dapat membuka panduan ini kapan saja dari menu builder.
+          </Text>
+          <div className="howto-modal-steps">
+            {HOWTO_STEPS.map((step, idx) => (
+              <div key={step.title} className="howto-modal-step">
+                <span className="howto-modal-step-num">{idx + 1}</span>
+                <div>
+                  <Text fw={600} size="sm">
+                    {step.title}
+                  </Text>
+                  <Text size="xs" c="dimmed" mt={2}>
+                    {step.body}
+                  </Text>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Group justify="space-between" mt="xs">
+            <Button
+              component={Link}
+              href="/how-to"
+              variant="subtle"
+              leftSection={<BookOpen size={14} />}
+              onClick={dismissHowToModal}
+            >
+              Baca panduan lengkap
+            </Button>
+            <Button onClick={dismissHowToModal} leftSection={<Sparkles size={14} />}>
+              Mulai membangun
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       {screen === "templates" ? (
         <TemplateSelection
           disabled={disabled}
@@ -598,6 +682,7 @@ export function BuilderWorkspace() {
           customZip={customZip}
           confirmedCustomQa={confirmedCustomQa}
           onOpenKeyModal={() => setKeyModalOpen(true)}
+          onOpenHowTo={() => setHowToModalOpen(true)}
           onPreview={setPreviewTemplate}
           onSelect={selectTemplate}
           onCustomZip={(file) => {
@@ -663,6 +748,7 @@ export function BuilderWorkspace() {
                   setPublishModalOpen(true);
                 }}
                 onOpenKeyModal={() => setKeyModalOpen(true)}
+                onOpenHowTo={() => setHowToModalOpen(true)}
               />
 
               <aside className={`builder-panel ${panelOpen ? "is-open" : "is-closed"}`}>
@@ -1133,6 +1219,7 @@ function TemplateSelection({
   customZip,
   confirmedCustomQa,
   onOpenKeyModal,
+  onOpenHowTo,
   onPreview,
   onSelect,
   onCustomZip,
@@ -1145,6 +1232,7 @@ function TemplateSelection({
   customZip: File | null;
   confirmedCustomQa: boolean;
   onOpenKeyModal: () => void;
+  onOpenHowTo: () => void;
   onPreview: (id: TemplateId) => void;
   onSelect: (id: TemplateId) => void;
   onCustomZip: (file: File | null) => void;
@@ -1169,15 +1257,20 @@ function TemplateSelection({
     <section className={`template-catalogue-page ${disabled ? "is-disabled" : ""} pb-0`}>
       <div className="catalogue-toolbar">
         <div className="catalogue-brand">
-          <Link href="/" aria-label="e-talase" className="catalogue-wordmark">
+          <a href="https://e-talase.com" aria-label="e-talase" className="catalogue-wordmark">
             <img src={etalaseLogo.src} alt="e-talase" />
-          </Link>
+          </a>
           <span className="catalogue-back">Template storefront</span>
         </div>
         <Group gap="xs">
-          {/* <Button component="a" href="/docs" variant="subtle" color="dark" leftSection={<BookOpen size={16} />}>
-            Dokumentasi SDK
-          </Button> */}
+          <Button
+            variant="subtle"
+            color="dark"
+            leftSection={<HelpCircle size={16} />}
+            onClick={onOpenHowTo}
+          >
+            Panduan
+          </Button>
           <Button leftSection={<KeyRound size={16} />} onClick={onOpenKeyModal} color={storeId ? "teal" : "dark"}>
             {storeId ? "Ubah Store ID" : "Masukkan Store ID"}
           </Button>
@@ -1312,15 +1405,16 @@ function TemplateSelection({
       ) : null}
 
       <footer className="catalogue-footer">
-        <Link href="/" aria-label="e-talase">
+        <a href="https://e-talase.com" aria-label="e-talase">
           <img src={etalaseLogo.src} alt="e-talase" />
-        </Link>
+        </a>
         <div className="catalogue-footer-copy">
           © {new Date().getFullYear()} · Storefront Builder · Dibuat untuk merchant e-talase
         </div>
         <div className="catalogue-footer-links">
           {/* <Link href="/docs">Dokumentasi SDK</Link> */}
           <Link href="/">Beranda</Link>
+          <Link href="/how-to">Panduan</Link>
         </div>
       </footer>
     </section>
@@ -1338,6 +1432,7 @@ function FloatingActionMenu({
   onSave,
   onPublish,
   onOpenKeyModal,
+  onOpenHowTo,
 }: {
   panelOpen: boolean;
   previewPage: PreviewPage;
@@ -1349,6 +1444,7 @@ function FloatingActionMenu({
   onSave: () => void;
   onPublish: () => void;
   onOpenKeyModal: () => void;
+  onOpenHowTo: () => void;
 }) {
   const pages: PreviewPage[] = ["home", "catalogue", "product"];
 
@@ -1394,6 +1490,9 @@ function FloatingActionMenu({
           Publish
         </Menu.Item>
         <Menu.Divider />
+        <Menu.Item leftSection={<HelpCircle size={16} />} onClick={onOpenHowTo}>
+          Buka panduan
+        </Menu.Item>
         <Menu.Item leftSection={<SettingsIcon size={16} />} onClick={onOpenKeyModal}>
           Ubah Store ID
         </Menu.Item>

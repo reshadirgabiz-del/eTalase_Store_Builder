@@ -25,7 +25,7 @@ import {
 } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "eTalase Builder",
+  title: "e-talase - Storefront Builder",
   description: "Buat dan sesuaikan halaman storefront eTalase.",
 };
 

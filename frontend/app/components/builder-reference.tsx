@@ -155,13 +155,17 @@ function BuilderStyles() {
 
 function BracketWordmark({ size = 24 }: { size?: number }) {
   return (
-    <span aria-label="e-talase" style={{ display: "inline-flex", alignItems: "center", lineHeight: 1, whiteSpace: "nowrap" }}>
+    <a
+      href="https://e-talase.com"
+      aria-label="e-talase"
+      style={{ display: "inline-flex", alignItems: "center", lineHeight: 1, whiteSpace: "nowrap" }}
+    >
       <img
         src={etalaseLogo.src}
         alt="e-talase"
         style={{ height: size * 1.3, width: "auto", display: "block" }}
       />
-    </span>
+    </a>
   );
 }
 
