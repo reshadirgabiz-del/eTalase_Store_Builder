@@ -493,21 +493,38 @@ function LandingHero({ onLogin, store, resetSignal = 0 }: { onLogin: (name: stri
     setLoading(false);
   }, [resetSignal]);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!storeId.trim() || !pubKey.trim()) {
+    const trimmedStoreId = storeId.trim();
+    const trimmedKey = pubKey.trim();
+    if (!trimmedStoreId || !trimmedKey) {
       setError("Isi Store ID dan Public Key kamu.");
       return;
     }
     setError("");
     setLoading(true);
-    window.setTimeout(() => {
-      setLoading(false);
-      const pretty = storeId.trim().replace(/[-_]+/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+    try {
+      const response = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeId: trimmedStoreId, secretKey: trimmedKey }),
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(json.error ?? "Tidak dapat memverifikasi kredensial.");
+      }
+      const nextStoreId = typeof json.storeId === "string" && json.storeId ? json.storeId : trimmedStoreId;
+      const nextPublicKey =
+        typeof json.publicStoreKey === "string" && json.publicStoreKey ? json.publicStoreKey : trimmedKey;
+      const pretty = nextStoreId.replace(/[-_]+/g, " ").replace(/\b\w/g, (m: string) => m.toUpperCase());
       const storeName = pretty || "Toko Kamu";
-      persistBuilderCredentials(storeId.trim(), pubKey.trim(), storeName);
+      persistBuilderCredentials(nextStoreId, nextPublicKey, storeName);
       onLogin(storeName);
-    }, 800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tidak dapat memverifikasi kredensial.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const field = (label: string, val: string, set: (v: string) => void, ph: string, mono = false) => (
@@ -529,8 +546,8 @@ function LandingHero({ onLogin, store, resetSignal = 0 }: { onLogin: (name: stri
         <p style={{ fontSize: "var(--lead)", color: "var(--hi-muted)", lineHeight: 1.55, maxWidth: 520, margin: "0 auto 34px" }}>Masuk pakai Store ID dan Public Key kamu. Pilih dari template, atau unggah desain halaman tokomu sendiri.</p>
         <form onSubmit={submit} style={{ maxWidth: 440, margin: "0 auto", textAlign: "left", background: "var(--hi-card)", border: "1px solid var(--hi-line)", borderRadius: 20, padding: 24, boxShadow: "0 30px 70px -40px rgba(28,26,20,0.4)" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {field("Store ID", storeId, setStoreId, "toko-rina")}
-            {field("Public Key", pubKey, setPubKey, "pk_live_a1b2c3d4e5f6", true)}
+            {field("Store ID", storeId, setStoreId, "00000000-0000-0000-0000-000000000000", true)}
+            {field("Public Key", pubKey, setPubKey, "etalase_pk_live_...", true)}
           </div>
           {error && <div style={{ marginTop: 12, fontSize: 12.5, color: "var(--c-terra)" }}>{error}</div>}
           <button type="submit" disabled={!!store || loading} style={{ width: "100%", marginTop: 18, padding: "13px 18px", borderRadius: 12, border: "none", background: store ? "var(--c-sage)" : "var(--accent)", color: "var(--accent-on)", fontSize: 14.5, fontWeight: 500, cursor: store ? "default" : "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
