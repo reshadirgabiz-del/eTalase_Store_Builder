@@ -221,7 +221,7 @@ export function BuilderWorkspace() {
     setStoreId(storeIdValue);
     setDraftStoreId(storeIdValue);
     setPublicStoreKey(storedPublicKey);
-    setKeyModalOpen(!storeIdValue);
+    setKeyModalOpen(!storeIdValue || !storedPublicKey);
     const howToSeen = window.localStorage.getItem(HOWTO_SEEN_STORAGE_KEY);
     if (!howToSeen) setHowToModalOpen(true);
     setHasHydrated(true);
@@ -316,10 +316,9 @@ export function BuilderWorkspace() {
   }, []);
 
   useEffect(() => {
-    const lookupKey = publicStoreKey || storeId;
-    if (!lookupKey) return;
-    void loadStore(lookupKey);
-  }, [loadStore, publicStoreKey, storeId]);
+    if (!publicStoreKey) return;
+    void loadStore(publicStoreKey);
+  }, [loadStore, publicStoreKey]);
 
   useEffect(() => {
     if (!publishModalOpen || publishedUrl) return;
@@ -548,16 +547,16 @@ export function BuilderWorkspace() {
     }
   }
 
-  const disabled = !storeId || !hasHydrated;
+  const disabled = !storeId || !publicStoreKey || !hasHydrated;
 
   return (
     <main className="builder-root">
       <Modal
         opened={keyModalOpen}
-        onClose={() => storeId && setKeyModalOpen(false)}
-        closeOnClickOutside={Boolean(storeId)}
-        closeOnEscape={Boolean(storeId)}
-        withCloseButton={Boolean(storeId)}
+        onClose={() => storeId && publicStoreKey && setKeyModalOpen(false)}
+        closeOnClickOutside={Boolean(storeId && publicStoreKey)}
+        closeOnEscape={Boolean(storeId && publicStoreKey)}
+        withCloseButton={Boolean(storeId && publicStoreKey)}
         centered
         size="md"
         radius="lg"

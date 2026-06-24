@@ -2,8 +2,6 @@ import { hashSecretKey, verifySecretKey } from "@/lib/credentials";
 import { createSession, destroySession, readSession } from "@/lib/session";
 import { getEtalaseSourceSupabase, getSupabaseAdmin, jsonError } from "@/lib/supabase";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export async function GET() {
   const session = await readSession();
   if (!session) {
@@ -38,10 +36,6 @@ export async function POST(request: Request) {
 
   if (!storeId || !accessKey) {
     return jsonError("Store ID dan access key wajib diisi", 400);
-  }
-
-  if (!UUID_RE.test(storeId)) {
-    return jsonError("Store ID tidak valid", 400);
   }
 
   const supabase = getSupabaseAdmin();
