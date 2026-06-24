@@ -43,6 +43,8 @@ const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
   "storefront-pastel": templatePastelShot,
   "storefront-pastel-bauhaus": templatePastelBauhausShot,
   "storefront-cyber": templateCyberShot,
+  "storefront-editorial": templateClassicShot,
+  "storefront-brutalist": templateModernShot,
 };
 import { createEtalaseClient } from "etalase-module";
 import {

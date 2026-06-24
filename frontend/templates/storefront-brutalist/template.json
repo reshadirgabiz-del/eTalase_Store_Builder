@@ -1,0 +1,12 @@
+{
+  "id": "storefront-brutalist",
+  "name": "Storefront Neon Brutalist",
+  "source": "frontend/app/components/storefront-brutalist-template.tsx",
+  "sdkReference": "../eTalase Module",
+  "editable": {
+    "colors": ["brand", "brandStrong", "buttonText", "accent", "pageBg", "ink"],
+    "fonts": ["fontBody", "fontHeading"],
+    "text": ["heroTitle", "heroSubtitle", "ctaLabel"]
+  },
+  "requiredEnv": ["NEXT_PUBLIC_ETALASE_API_URL", "NEXT_PUBLIC_ETALASE_STORE_KEY"]
+}

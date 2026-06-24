@@ -17,6 +17,8 @@ const REAL_TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = 
   "storefront-pastel": templatePastelShot,
   "storefront-pastel-bauhaus": templatePastelShot,
   "storefront-cyber": templateCyberShot,
+  "storefront-editorial": templateClassicShot,
+  "storefront-brutalist": templateModernShot,
 };
 
 const STANDARD_TEMPLATES = realTemplates.filter((t) => t.id !== "custom-upload");

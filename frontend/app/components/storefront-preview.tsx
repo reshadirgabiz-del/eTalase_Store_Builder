@@ -24,6 +24,8 @@ import type { ColorScheme, TemplateId } from "@/lib/templates";
 import { StorefrontBauhausTemplate } from "./storefront-bauhaus-template";
 import { StorefrontPastelTemplate } from "./storefront-pastel-template";
 import { StorefrontCyberTemplate } from "./storefront-cyber-template";
+import { StorefrontEditorialTemplate } from "./storefront-editorial-template";
+import { StorefrontBrutalistTemplate } from "./storefront-brutalist-template";
 
 export type SectionId = "hero" | "categories" | "catalogue" | "footer";
 export type PreviewPage = "home" | "catalogue" | "product";
@@ -758,7 +760,13 @@ function FooterBlock({
   );
 }
 
-export const TEMPLATES_WITH_STATIC_HERO: TemplateId[] = ["storefront-modern", "storefront-bauhaus", "storefront-cyber"];
+export const TEMPLATES_WITH_STATIC_HERO: TemplateId[] = [
+  "storefront-modern",
+  "storefront-bauhaus",
+  "storefront-cyber",
+  "storefront-editorial",
+  "storefront-brutalist",
+];
 
 export function templateSupportsHeroImage(templateId: TemplateId | undefined) {
   if (!templateId) return false;
@@ -870,6 +878,8 @@ export function StorefrontPreview({
       "storefront-pastel": "pastel-store",
       "storefront-pastel-bauhaus": "pastel-store is-bauhaus",
       "storefront-cyber": "cyber-page",
+      "storefront-editorial": "editorial-page",
+      "storefront-brutalist": "brutal-page",
     };
     const wrapperClass = wrapperByTemplate[templateId ?? "storefront-classic"] ?? "storefront-page";
     return <StorefrontSkeleton wrapperClass={wrapperClass} showHero={page === "home"} cardCount={page === "product" ? 0 : 8} />;
@@ -938,6 +948,60 @@ export function StorefrontPreview({
   if (templateId === "storefront-cyber") {
     return (
       <StorefrontCyberTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "storefront-editorial") {
+    return (
+      <StorefrontEditorialTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "storefront-brutalist") {
+    return (
+      <StorefrontBrutalistTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}

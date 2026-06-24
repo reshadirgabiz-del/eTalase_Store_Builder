@@ -1,4 +1,13 @@
-export type TemplateId = "storefront-classic" | "storefront-modern" | "storefront-pastel" | "storefront-pastel-bauhaus" | "storefront-bauhaus" | "storefront-cyber" | "custom-upload";
+export type TemplateId =
+  | "storefront-classic"
+  | "storefront-modern"
+  | "storefront-pastel"
+  | "storefront-pastel-bauhaus"
+  | "storefront-bauhaus"
+  | "storefront-cyber"
+  | "storefront-editorial"
+  | "storefront-brutalist"
+  | "custom-upload";
 
 export type TemplateLayout = "full-home" | "catalogue-first";
 
@@ -78,6 +87,28 @@ export const templates: BuilderTemplate[] = [
       "Template minimalis cyberpunk dengan kanvas off-white, sentuhan neon magenta dan cyan, efek RGB-shift saat hover, dan judul bergaya glitch untuk toko bernuansa edgy dan futuristik.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero glitch chromatic", "Kartu kategori neon", "Katalog kartu hairline", "Sidebar keranjang"],
+  },
+  {
+    id: "storefront-editorial",
+    name: "Storefront Editorial",
+    source: "frontend/app/components/storefront-editorial-template.tsx",
+    status: "ready",
+    layout: "full-home",
+    description:
+      "Template bergaya majalah dengan tipografi serif besar, tata letak asimetris, dan nomor edisi. Cocok untuk toko butik dengan narasi visual yang kuat dan presentasi produk seperti spread editorial.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero editorial spread", "Kategori bernomor", "Katalog dua kolom asimetris", "Detail produk magazine"],
+  },
+  {
+    id: "storefront-brutalist",
+    name: "Storefront Neon Brutalist",
+    source: "frontend/app/components/storefront-brutalist-template.tsx",
+    status: "ready",
+    layout: "full-home",
+    description:
+      "Template brutalist dengan tipografi sans super besar, blok warna mentah, bayangan keras, dan sorotan neon. Untuk toko yang ingin tampil berani, ekspresif, dan tidak takut menonjol.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero blok warna besar", "Kategori sticker neon", "Katalog kartu shadow keras", "Detail produk kontras tinggi"],
   },
   {
     id: "custom-upload",
@@ -294,6 +325,62 @@ export const colorSchemes: ColorScheme[] = [
     surface: "#ffffff",
     ink: "#0a0a0f",
     muted: "#5a5a66",
+  },
+  {
+    id: "editorial-ivory",
+    name: "Editorial Ivory",
+    fontBody: "var(--font-source-serif), Georgia, serif",
+    fontHeading: "var(--font-playfair), Georgia, serif",
+    brand: "#1f1d1a",
+    brandStrong: "#0a0a0a",
+    buttonText: "#fbf8f1",
+    accent: "#b04a2a",
+    pageBg: "#fbf8f1",
+    surface: "#ffffff",
+    ink: "#181612",
+    muted: "#7a6f63",
+  },
+  {
+    id: "editorial-slate",
+    name: "Editorial Slate",
+    fontBody: "var(--font-lora), Georgia, serif",
+    fontHeading: "var(--font-fraunces), Georgia, serif",
+    brand: "#1e2a3a",
+    brandStrong: "#0c1726",
+    buttonText: "#f6f4ef",
+    accent: "#c7a85a",
+    pageBg: "#f6f4ef",
+    surface: "#ffffff",
+    ink: "#101820",
+    muted: "#6b7280",
+  },
+  {
+    id: "brutalist-acid",
+    name: "Brutalist Acid",
+    fontBody: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#0a0a0a",
+    brandStrong: "#000000",
+    buttonText: "#ccff00",
+    accent: "#ccff00",
+    pageBg: "#f2f2ed",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#525252",
+  },
+  {
+    id: "brutalist-hot",
+    name: "Brutalist Hot",
+    fontBody: "var(--font-urbanist), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-urbanist), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#ff3366",
+    brandStrong: "#cc1a4d",
+    buttonText: "#ffffff",
+    accent: "#00d1b2",
+    pageBg: "#fffaf3",
+    surface: "#ffffff",
+    ink: "#0a0a0a",
+    muted: "#4b4b4b",
   },
   {
     id: "cyber-night",
