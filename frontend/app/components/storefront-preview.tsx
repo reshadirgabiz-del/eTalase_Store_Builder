@@ -878,6 +878,8 @@ export function StorefrontPreview({
       "storefront-bauhaus": "bauhaus-page",
       "storefront-pastel": "pastel-store",
       "storefront-pastel-bauhaus": "pastel-store is-bauhaus",
+      "storefront-mosaic": "pastel-store is-mosaic",
+      "storefront-noir": "pastel-store is-noir",
       "storefront-cyber": "cyber-page",
       "storefront-editorial": "editorial-page",
       "storefront-brutalist": "brutal-page",
@@ -1027,7 +1029,12 @@ export function StorefrontPreview({
     );
   }
 
-  if (templateId === "storefront-pastel" || templateId === "storefront-pastel-bauhaus") {
+  if (
+    templateId === "storefront-pastel" ||
+    templateId === "storefront-pastel-bauhaus" ||
+    templateId === "storefront-mosaic" ||
+    templateId === "storefront-noir"
+  ) {
     return (
       <StorefrontPastelTemplate
         storeName={storeName}
@@ -1049,7 +1056,15 @@ export function StorefrontPreview({
         page={page}
         onNavigate={onNavigate}
         badgeEditable={badgeEditable}
-        variant={templateId === "storefront-pastel-bauhaus" ? "bauhaus" : "default"}
+        variant={
+          templateId === "storefront-pastel-bauhaus"
+            ? "bauhaus"
+            : templateId === "storefront-mosaic"
+              ? "mosaic"
+              : templateId === "storefront-noir"
+                ? "noir"
+                : "default"
+        }
       />
     );
   }

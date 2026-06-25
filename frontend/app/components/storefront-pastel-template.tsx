@@ -51,7 +51,7 @@ type Props = {
   page: PreviewPage;
   onNavigate: (page: PreviewPage) => void;
   badgeEditable?: boolean;
-  variant?: "default" | "bauhaus";
+  variant?: "default" | "bauhaus" | "mosaic" | "noir";
 };
 
 function stockLimit(product: Product) {
@@ -298,7 +298,14 @@ export function StorefrontPastelTemplate({
   badgeEditable = false,
   variant = "default",
 }: Props) {
-  const variantClass = variant === "bauhaus" ? "is-bauhaus" : "";
+  const variantClass =
+    variant === "bauhaus"
+      ? "is-bauhaus"
+      : variant === "mosaic"
+        ? "is-mosaic"
+        : variant === "noir"
+          ? "is-noir"
+          : "";
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

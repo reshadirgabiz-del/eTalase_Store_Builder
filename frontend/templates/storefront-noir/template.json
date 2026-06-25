@@ -1,7 +1,7 @@
 {
-  "id": "storefront-bauhaus",
-  "name": "Storefront Primary Bauhaus",
-  "source": "frontend/app/components/storefront-bauhaus-template.tsx",
+  "id": "storefront-noir",
+  "name": "Storefront Noir Gallery",
+  "source": "frontend/app/components/storefront-pastel-template.tsx",
   "sdkReference": "../eTalase Module",
   "editable": {
     "colors": ["brand", "brandStrong", "buttonText", "accent", "pageBg", "ink"],

@@ -4,6 +4,8 @@ export type TemplateId =
   | "storefront-pastel"
   | "storefront-pastel-bauhaus"
   | "storefront-bauhaus"
+  | "storefront-mosaic"
+  | "storefront-noir"
   | "storefront-cyber"
   | "storefront-editorial"
   | "storefront-brutalist"
@@ -56,17 +58,6 @@ export const templates: BuilderTemplate[] = [
     capabilities: ["Hero Bauhaus modern", "Grid kategori blok", "Katalog produk animatif", "Sidebar keranjang"],
   },
   {
-    id: "storefront-bauhaus",
-    name: "Storefront Primary Bauhaus",
-    source: "frontend/app/components/storefront-bauhaus-template.tsx",
-    status: "ready",
-    layout: "full-home",
-    description:
-      "Template storefront dengan bahasa visual Bauhaus yang lebih tegas: komposisi geometris, aksen primer, navigasi ringkas, dan katalog grid yang terasa seperti poster produk interaktif.",
-    sdkReference: "../eTalase Module",
-    capabilities: ["Hero geometri primer", "Navigasi poster", "Grid kategori modular", "Katalog motion"],
-  },
-  {
     id: "storefront-pastel",
     name: "Storefront Pastel",
     source: "../Storepage test/template-3",
@@ -87,6 +78,28 @@ export const templates: BuilderTemplate[] = [
       "Varian dari template pastel dengan estetika Bauhaus: warna primer berani, bentuk geometris tegas, garis hairline, dan kartu kategori berwarna blok. Layout tetap mengikuti template pastel.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero opening Bauhaus", "Kartu kategori warna blok", "Katalog kartu kotak", "Detail produk geometris"],
+  },
+  {
+    id: "storefront-mosaic",
+    name: "Storefront Mosaic Market",
+    source: "frontend/app/components/storefront-pastel-template.tsx",
+    status: "ready",
+    layout: "catalogue-first",
+    description:
+      "Template bergaya pasar kreatif dengan mosaik produk rapat, header seperti label toko, warna aksen berlapis, dan kartu katalog yang terasa seperti ubin display butik.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Mosaik produk", "Header label toko", "Kategori ubin besar", "Katalog editorial padat"],
+  },
+  {
+    id: "storefront-noir",
+    name: "Storefront Noir Gallery",
+    source: "frontend/app/components/storefront-pastel-template.tsx",
+    status: "ready",
+    layout: "catalogue-first",
+    description:
+      "Template galeri gelap dengan presentasi produk dramatis, kartu glassy, aksen tipis, dan suasana premium untuk brand fashion, fragrance, aksesori, atau koleksi terbatas.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Galeri gelap", "Produk spotlight", "Kartu glassy", "Detail premium"],
   },
   {
     id: "storefront-cyber",

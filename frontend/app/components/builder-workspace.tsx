@@ -45,6 +45,8 @@ const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
   "storefront-bauhaus": templateModernShot,
   "storefront-pastel": templatePastelShot,
   "storefront-pastel-bauhaus": templatePastelBauhausShot,
+  "storefront-mosaic": templatePastelShot,
+  "storefront-noir": templateEditorialShot,
   "storefront-cyber": templateCyberShot,
   "storefront-editorial": templateEditorialShot,
   "storefront-brutalist": templateNeonBrutaliseShot,
