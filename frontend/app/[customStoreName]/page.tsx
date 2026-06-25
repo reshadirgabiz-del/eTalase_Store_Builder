@@ -72,7 +72,7 @@ export default function CustomStorefrontPage({
             storeId: aliasJson.storeId ?? undefined,
             publicKey,
             theme: (aliasJson.theme ?? colorSchemes[0]) as ColorScheme,
-            templateId: (aliasJson.templateId ?? "storefront-classic") as TemplateId,
+            templateId: (aliasJson.templateId ?? "classic") as TemplateId,
             texts: (aliasJson.texts ?? {}) as TextConfig,
             hidden: (aliasJson.hidden ?? {}) as HiddenConfig,
             config: (aliasJson.config ?? {}) as { productTextOverrides?: ProductTextOverrides },
@@ -154,7 +154,7 @@ export default function CustomStorefrontPage({
   return (
     <div className="published-shell" style={themeStyle}>
       <StorefrontPreview
-        templateId={snapshot?.templateId ?? "storefront-classic"}
+        templateId={snapshot?.templateId ?? "classic"}
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeInfo?.storeId || resolvedStoreId || snapshot?.storeId || alias}

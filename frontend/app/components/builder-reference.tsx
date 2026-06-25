@@ -4,23 +4,23 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import etalaseLogo from "../../assets/logo.png";
-import templateClassicShot from "../../assets/templateScreenshots/storefront-classic.png";
-import templateModernShot from "../../assets/templateScreenshots/storefront-modern.png";
-import templatePastelShot from "../../assets/templateScreenshots/storefront-pastel.png";
-import templateCyberShot from "../../assets/templateScreenshots/storefront-cyber-glitch.png";
+import templateClassicShot from "../../assets/templateScreenshots/classic.png";
+import templateModernShot from "../../assets/templateScreenshots/modern.png";
+import templatePastelShot from "../../assets/templateScreenshots/pastel.png";
+import templateCyberShot from "../../assets/templateScreenshots/cyber.png";
 import { templates as realTemplates, type TemplateId } from "@/lib/templates";
 
 const REAL_TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
-  "storefront-classic": templateClassicShot,
-  "storefront-modern": templateModernShot,
-  "storefront-bauhaus": templateModernShot,
-  "storefront-pastel": templatePastelShot,
-  "storefront-pastel-bauhaus": templatePastelShot,
-  "storefront-mosaic": templatePastelShot,
-  "storefront-noir": templateClassicShot,
-  "storefront-cyber": templateCyberShot,
-  "storefront-editorial": templateClassicShot,
-  "storefront-brutalist": templateModernShot,
+  "classic": templateClassicShot,
+  "modern": templateModernShot,
+  "bauhaus": templateModernShot,
+  "pastel": templatePastelShot,
+  "pastel-bauhaus": templatePastelShot,
+  "mosaic": templatePastelShot,
+  "noir": templateClassicShot,
+  "cyber": templateCyberShot,
+  "editorial": templateClassicShot,
+  "brutalist": templateModernShot,
 };
 
 const STANDARD_TEMPLATES = realTemplates.filter((t) => t.id !== "custom-upload");

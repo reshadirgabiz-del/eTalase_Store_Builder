@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Minus, Plus, ShoppingBag, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Minus, Plus, ShoppingBag, Star, X, Zap } from "lucide-react";
 import etalaseLogo from "../../assets/logo.png";
 
 import type {
@@ -28,7 +28,7 @@ import {
 
 const ETALASE_CHECKOUT_HOST = "https://app.e-talase.com";
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop";
+  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop";
 
 type CartItem = { product: Product; quantity: number };
 
@@ -55,6 +55,8 @@ type Props = {
   heroImageOverride?: string | null;
 };
 
+const STICKER_TONES = ["pink", "lime", "cyan", "yellow", "purple"] as const;
+
 function stockLimit(product: Product) {
   return typeof product.stock === "number" ? Math.max(0, product.stock) : 99;
 }
@@ -77,12 +79,32 @@ function titleCase(value: string) {
     .join("");
 }
 
-function ordinal(n: number) {
+function pad(n: number) {
   return n.toString().padStart(2, "0");
 }
 
-function socialLine(platform: string) {
-  return titleCase(platform);
+function MarqueeStrip({
+  children,
+  paused = false,
+}: {
+  children: React.ReactNode;
+  paused?: boolean;
+}) {
+  return (
+    <div className="brutal-marquee" aria-hidden={paused ? undefined : "true"}>
+      <motion.div
+        className="brutal-marquee-track"
+        animate={paused ? { x: "0%" } : { x: ["0%", "-50%"] }}
+        transition={paused ? { duration: 0 } : { ease: "linear", duration: 22, repeat: Infinity }}
+      >
+        {Array.from({ length: 2 }).map((_, copy) => (
+          <span className="brutal-marquee-row" key={copy}>
+            {children}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
 }
 
 function Header({
@@ -95,7 +117,6 @@ function Header({
   onNavigate,
   onCartClick,
   onUpdateText,
-  edition,
 }: {
   storeName: string;
   logoUrl: string;
@@ -106,55 +127,41 @@ function Header({
   onNavigate: (page: PreviewPage) => void;
   onCartClick: () => void;
   onUpdateText: (id: SectionId, field: TextField, value: string) => void;
-  edition: string;
 }) {
   const homeLabel = texts.hero.navHome || INITIAL_TEXT.hero.navHome || "Beranda";
   const catalogueLabel = texts.hero.navCatalogue || INITIAL_TEXT.hero.navCatalogue || "Katalog";
   const cartLabel = texts.hero.cartLabel || INITIAL_TEXT.hero.cartLabel || "Keranjang";
   return (
-    <header className="editorial-header">
-      <div className="editorial-header-row top">
-        <span className="editorial-meta">N° {edition}</span>
-        <span className="editorial-meta center">
-          {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}
+    <header className="brutal-header">
+      <button type="button" className="brutal-logo" onClick={() => onNavigate("home")}>
+        <span className="brutal-logo-mark" aria-hidden="true">
+          {logoUrl ? <img src={logoUrl} alt="" /> : <Zap size={18} strokeWidth={3} />}
         </span>
-        <span className="editorial-meta right">Edisi Terkini</span>
-      </div>
-      <div className="editorial-masthead">
-        {logoUrl ? (
-          <span className="editorial-masthead-mark" aria-hidden="true">
-            <img src={logoUrl} alt="" />
-          </span>
-        ) : null}
-        <button type="button" className="editorial-wordmark" onClick={() => onNavigate("home")}>
+        <EditableText
+          as="strong"
+          value={texts.hero.storeName || storeName}
+          editable={editable}
+          onChange={(value) => onUpdateText("hero", "storeName", value)}
+        />
+      </button>
+      <nav className="brutal-nav">
+        <button type="button" className={page === "home" ? "is-active" : ""} onClick={() => onNavigate("home")}>
+          <EditableText as="span" value={homeLabel} editable={editable} onChange={(value) => onUpdateText("hero", "navHome", value)} />
+        </button>
+        <button type="button" className={page === "catalogue" ? "is-active" : ""} onClick={() => onNavigate("catalogue")}>
           <EditableText
             as="span"
-            value={texts.hero.storeName || storeName}
+            value={catalogueLabel}
             editable={editable}
-            onChange={(value) => onUpdateText("hero", "storeName", value)}
+            onChange={(value) => onUpdateText("hero", "navCatalogue", value)}
           />
         </button>
-      </div>
-      <div className="editorial-header-row nav">
-        <nav className="editorial-nav">
-          <button type="button" className={page === "home" ? "is-active" : ""} onClick={() => onNavigate("home")}>
-            <EditableText as="span" value={homeLabel} editable={editable} onChange={(value) => onUpdateText("hero", "navHome", value)} />
-          </button>
-          <span className="editorial-nav-sep" aria-hidden="true">·</span>
-          <button type="button" className={page === "catalogue" ? "is-active" : ""} onClick={() => onNavigate("catalogue")}>
-            <EditableText
-              as="span"
-              value={catalogueLabel}
-              editable={editable}
-              onChange={(value) => onUpdateText("hero", "navCatalogue", value)}
-            />
-          </button>
-        </nav>
-        <button type="button" className="editorial-cart" onClick={onCartClick}>
-          <EditableText as="span" value={cartLabel} editable={editable} onChange={(value) => onUpdateText("hero", "cartLabel", value)} />
-          <span className="editorial-cart-count">{cartCount}</span>
-        </button>
-      </div>
+      </nav>
+      <button type="button" className="brutal-cart" onClick={onCartClick}>
+        <ShoppingBag size={16} strokeWidth={2.4} />
+        <EditableText as="span" value={cartLabel} editable={editable} onChange={(value) => onUpdateText("hero", "cartLabel", value)} />
+        <span className="brutal-cart-count">{cartCount}</span>
+      </button>
     </header>
   );
 }
@@ -204,31 +211,31 @@ function CartDrawer({
   }
 
   return (
-    <div className={`cart-overlay editorial-cart-overlay ${open ? "is-open" : ""}`} aria-hidden={!open}>
+    <div className={`cart-overlay brutal-cart-overlay ${open ? "is-open" : ""}`} aria-hidden={!open}>
       <button className="cart-scrim" type="button" onClick={onClose} aria-label="Tutup keranjang" />
-      <aside className="cart-drawer editorial-drawer" aria-label="Keranjang">
-        <div className="editorial-drawer-head">
+      <aside className="cart-drawer brutal-drawer" aria-label="Keranjang">
+        <div className="brutal-drawer-head">
           <div>
-            <span className="editorial-eyebrow">{texts.catalogue.cartTitle || "Keranjang"}</span>
+            <span className="brutal-eyebrow">{texts.catalogue.cartTitle || "Keranjang"}</span>
             <strong>{items.length} item</strong>
           </div>
           <button type="button" onClick={onClose} aria-label="Tutup">
-            <X size={18} />
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
         {items.length > 0 ? (
           <>
-            <div className="editorial-drawer-items">
+            <div className="brutal-drawer-items">
               {items.map(({ product, quantity }) => (
-                <div className="editorial-drawer-item" key={product.id}>
-                  <div className="editorial-drawer-thumb">
+                <div className="brutal-drawer-item" key={product.id}>
+                  <div className="brutal-drawer-thumb">
                     {productThumbnail(product) ? (
                       <img src={productThumbnail(product)} alt={productText(product).name} />
                     ) : (
-                      <span className="editorial-drawer-thumb-fallback">{productText(product).name.charAt(0)}</span>
+                      <span>{productText(product).name.charAt(0)}</span>
                     )}
                   </div>
-                  <div className="editorial-drawer-meta">
+                  <div className="brutal-drawer-meta">
                     <strong>{productText(product).name}</strong>
                     <span>×{quantity}</span>
                   </div>
@@ -236,17 +243,17 @@ function CartDrawer({
                 </div>
               ))}
             </div>
-            <div className="editorial-drawer-summary">
+            <div className="brutal-drawer-summary">
               <span>{texts.catalogue.totalLabel || "Total"}</span>
               <strong>{formatPrice(total, currency)}</strong>
             </div>
-            <button className="editorial-primary editorial-drawer-cta" type="button" onClick={handleCheckoutClick}>
+            <button className="brutal-primary brutal-drawer-cta" type="button" onClick={handleCheckoutClick}>
               {texts.catalogue.checkoutLabel || "Checkout"}
-              <ArrowUpRight size={16} />
+              <ArrowRight size={16} strokeWidth={2.5} />
             </button>
           </>
         ) : (
-          <div className="editorial-drawer-empty">
+          <div className="brutal-drawer-empty">
             <ShoppingBag size={22} />
             <strong>{texts.catalogue.cartEmptyTitle || "Keranjang Anda kosong"}</strong>
             <span>{texts.catalogue.cartEmptyBody || "Tambahkan produk untuk meninjaunya di sini."}</span>
@@ -255,7 +262,7 @@ function CartDrawer({
       </aside>
       {confirmOpen ? (
         <div className="checkout-confirm" role="alertdialog" aria-modal="true">
-          <div className="checkout-confirm-card editorial-confirm">
+          <div className="checkout-confirm-card brutal-confirm">
             <h3>{texts.catalogue.confirmTitle || "Mengalihkan ke e-talase"}</h3>
             <p>{texts.catalogue.confirmBody || "Anda akan diarahkan ke halaman e-talase untuk menyelesaikan checkout."}</p>
             <button type="button" onClick={confirmRedirect}>
@@ -268,7 +275,7 @@ function CartDrawer({
   );
 }
 
-export function StorefrontEditorialTemplate({
+export function BrutalistTemplate({
   storeName,
   logoUrl,
   storeId,
@@ -371,16 +378,21 @@ export function StorefrontEditorialTemplate({
       }}
       onCartClick={() => setCartOpen(true)}
       onUpdateText={onUpdateText}
-      edition="01"
     />
   );
 
   const footer = !hidden.footer ? (
-    <footer className="editorial-footer">
-      <div className="editorial-footer-rule" aria-hidden="true" />
-      <div className="editorial-footer-grid">
-        <div className="editorial-footer-col">
-          <span className="editorial-eyebrow">Kolofon</span>
+    <footer className="brutal-footer">
+      <MarqueeStrip>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <span key={i} className="brutal-marquee-item">
+            {displayStoreName.toUpperCase()} <Star size={14} strokeWidth={2.6} fill="currentColor" />
+          </span>
+        ))}
+      </MarqueeStrip>
+      <div className="brutal-footer-grid">
+        <div className="brutal-footer-col">
+          <span className="brutal-eyebrow">Toko</span>
           <EditableText
             as="strong"
             value={displayStoreName}
@@ -395,27 +407,27 @@ export function StorefrontEditorialTemplate({
             multiline
           />
         </div>
-        <div className="editorial-footer-col">
-          <span className="editorial-eyebrow">Arsip</span>
-          <button type="button" onClick={() => go("home")}>Beranda</button>
-          <button type="button" onClick={() => goCatalogue(null)}>Katalog Lengkap</button>
+        <div className="brutal-footer-col">
+          <span className="brutal-eyebrow">Navigasi</span>
+          <button type="button" onClick={() => go("home")}>Beranda →</button>
+          <button type="button" onClick={() => goCatalogue(null)}>Katalog →</button>
         </div>
-        <div className="editorial-footer-col">
-          <span className="editorial-eyebrow">Sambungan</span>
+        <div className="brutal-footer-col">
+          <span className="brutal-eyebrow">Sosial</span>
           {(settings?.socialLinks ?? []).length > 0 ? (
             (settings?.socialLinks ?? []).map((link) => (
               <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
-                {socialLine(link.platform)} <ArrowUpRight size={12} />
+                {titleCase(link.platform)} <ArrowUpRight size={12} strokeWidth={2.4} />
               </a>
             ))
           ) : (
-            <span className="editorial-muted">Belum ada tautan sosial.</span>
+            <span className="brutal-muted">Belum ada tautan.</span>
           )}
         </div>
       </div>
-      <div className="editorial-footer-bottom">
-        <small>© {new Date().getFullYear()} {displayStoreName}. Hak cipta dilindungi.</small>
-        <a className="editorial-powered" href="https://app.e-talase.com" target="_blank" rel="noreferrer">
+      <div className="brutal-footer-bottom">
+        <small>© {new Date().getFullYear()} {displayStoreName}.</small>
+        <a className="brutal-powered" href="https://app.e-talase.com" target="_blank" rel="noreferrer">
           Powered by <img src={etalaseLogo.src} alt="e-talase" />
         </a>
       </div>
@@ -437,30 +449,30 @@ export function StorefrontEditorialTemplate({
 
   if (page === "catalogue") {
     return (
-      <div className="editorial-page">
+      <div className="brutal-page">
         {header}
-        <main className="editorial-main">
-          <section className="editorial-catalogue-head">
-            <span className="editorial-eyebrow">
-              {selectedCategory ? `Bagian / ${titleCase(selectedCategory)}` : "Indeks"}
+        <main className="brutal-main">
+          <section className="brutal-catalogue-head">
+            <span className="brutal-eyebrow">
+              {selectedCategory ? `Filter // ${titleCase(selectedCategory)}` : "Indeks"}
             </span>
             <EditableText
               as="h1"
-              className="editorial-display"
+              className="brutal-display"
               value={selectedCategory ? titleCase(selectedCategory) : texts.catalogue.title || "Katalog"}
               editable={canEditText && !selectedCategory}
               onChange={(value) => onUpdateText("catalogue", "title", value)}
             />
             <EditableText
               as="p"
-              className="editorial-lede"
-              value={texts.catalogue.body || `${filteredProducts.length} edisi tersedia, disusun untuk pembaca masa kini.`}
+              className="brutal-lede"
+              value={texts.catalogue.body || `${filteredProducts.length} produk siap dikirim.`}
               editable={canEditText}
               onChange={(value) => onUpdateText("catalogue", "body", value)}
               multiline
             />
             {categories.length > 0 ? (
-              <div className="editorial-tabs">
+              <div className="brutal-tabs">
                 <button
                   type="button"
                   className={!selectedCategory ? "is-active" : ""}
@@ -490,7 +502,7 @@ export function StorefrontEditorialTemplate({
             onProduct={goProduct}
             cartItems={cartItems}
             onAddToCart={(product) => addToCart(product, 1)}
-            addLabel={texts.catalogue.addToCartLabel || "Tambah"}
+            addLabel={texts.catalogue.addToCartLabel || "Beli"}
             soldOutLabel={texts.catalogue.soldOutLabel || "Habis"}
           />
         </main>
@@ -507,22 +519,22 @@ export function StorefrontEditorialTemplate({
     const safeQuantity = boundedQuantity(productQuantity, Math.max(1, stock));
     const featuredIndex = featuredProduct ? products.findIndex((p) => p.id === featuredProduct.id) + 1 : 1;
     return (
-      <div className="editorial-page">
+      <div className="brutal-page">
         {header}
-        <main className="editorial-main">
-          <section className="editorial-detail">
-            <button className="editorial-back" type="button" onClick={() => go("catalogue")}>
-              <ArrowLeft size={14} /> {texts.catalogue.backLabel || "Kembali ke katalog"}
+        <main className="brutal-main">
+          <section className="brutal-detail">
+            <button className="brutal-back" type="button" onClick={() => go("catalogue")}>
+              <ArrowLeft size={14} strokeWidth={2.5} /> {texts.catalogue.backLabel || "Kembali ke katalog"}
             </button>
             {featuredProduct && copy ? (
-              <div className="editorial-detail-grid">
-                <div className="editorial-detail-gallery">
-                  <div className="editorial-detail-main">
+              <div className="brutal-detail-grid">
+                <div className="brutal-detail-gallery">
+                  <div className="brutal-detail-main">
                     <img src={gallery[0] || FALLBACK_IMAGE} alt={copy.name} />
-                    <span className="editorial-detail-folio">Pl. {ordinal(featuredIndex)}</span>
+                    <span className="brutal-detail-tag">#{pad(featuredIndex)}</span>
                   </div>
                   {gallery.length > 1 ? (
-                    <div className="editorial-detail-thumbs">
+                    <div className="brutal-detail-thumbs">
                       {gallery.slice(1, 5).map((src, index) => (
                         <div key={`${src}-${index}`}>
                           <img src={src} alt="" />
@@ -531,11 +543,11 @@ export function StorefrontEditorialTemplate({
                     </div>
                   ) : null}
                 </div>
-                <aside className="editorial-detail-copy">
-                  <span className="editorial-eyebrow">Lembar Produk</span>
+                <aside className="brutal-detail-copy">
+                  <span className="brutal-eyebrow">Produk</span>
                   <EditableText
                     as="h1"
-                    className="editorial-display"
+                    className="brutal-display"
                     value={copy.name}
                     editable={canEditText}
                     onChange={(value) => onUpdateProductText(featuredProduct.id, "name", value)}
@@ -543,14 +555,14 @@ export function StorefrontEditorialTemplate({
                   {copy.subtitle ? (
                     <EditableText
                       as="p"
-                      className="editorial-subtitle"
+                      className="brutal-subtitle"
                       value={copy.subtitle}
                       editable={canEditText}
                       onChange={(value) => onUpdateProductText(featuredProduct.id, "subtitle", value)}
                       multiline
                     />
                   ) : null}
-                  <div className="editorial-price-row">
+                  <div className="brutal-price-row">
                     <strong>{formatPrice(effectivePrice(featuredProduct), currency)}</strong>
                     {featuredProduct.discountedPrice ? (
                       <s>{formatPrice(featuredProduct.price, currency)}</s>
@@ -558,22 +570,20 @@ export function StorefrontEditorialTemplate({
                   </div>
                   <EditableText
                     as="p"
-                    className="editorial-description editorial-dropcap"
-                    value={
-                      copy.description || texts.catalogue.productFallback || "Catatan editor akan tampil di sini."
-                    }
+                    className="brutal-description"
+                    value={copy.description || texts.catalogue.productFallback || "Deskripsi produk akan tampil di sini."}
                     editable={canEditText}
                     onChange={(value) => onUpdateProductText(featuredProduct.id, "description", value)}
                     multiline
                   />
-                  <div className="editorial-qty">
+                  <div className="brutal-qty">
                     <button
                       type="button"
                       aria-label="Kurangi"
                       disabled={safeQuantity <= 1}
                       onClick={() => setProductQuantity(safeQuantity - 1)}
                     >
-                      <Minus size={14} />
+                      <Minus size={14} strokeWidth={2.6} />
                     </button>
                     <input
                       value={safeQuantity}
@@ -588,16 +598,16 @@ export function StorefrontEditorialTemplate({
                       disabled={safeQuantity >= stock || stock === 0}
                       onClick={() => setProductQuantity(safeQuantity + 1)}
                     >
-                      <Plus size={14} />
+                      <Plus size={14} strokeWidth={2.6} />
                     </button>
                   </div>
                   <button
-                    className="editorial-primary editorial-detail-cta"
+                    className="brutal-primary brutal-detail-cta"
                     type="button"
                     disabled={stock === 0}
                     onClick={() => addToCart(featuredProduct, safeQuantity)}
                   >
-                    <ShoppingBag size={16} />
+                    <ShoppingBag size={16} strokeWidth={2.4} />
                     {stock === 0
                       ? texts.catalogue.soldOutLabel || "Stok habis"
                       : `${texts.catalogue.addToCartLabel || "Tambah ke keranjang"} · ${formatPrice(
@@ -605,16 +615,10 @@ export function StorefrontEditorialTemplate({
                           currency,
                         )}`}
                   </button>
-                  <div className="editorial-marginalia">
-                    <span>Catatan kurator</span>
-                    <em>
-                      Edisi terkurasi dengan saksama, dikirim langsung dari {displayStoreName}.
-                    </em>
-                  </div>
                 </aside>
               </div>
             ) : (
-              <p className="editorial-empty">Belum ada produk tersedia.</p>
+              <p className="brutal-empty">Belum ada produk tersedia.</p>
             )}
           </section>
         </main>
@@ -625,89 +629,103 @@ export function StorefrontEditorialTemplate({
   }
 
   return (
-    <div className="editorial-page">
+    <div className="brutal-page">
       {header}
-      <main className="editorial-main">
+      <main className="brutal-main">
         {!hidden.hero ? (
-          <section className="editorial-hero">
-            <div className="editorial-hero-copy">
-              <EditableText
-                as="span"
-                className="editorial-eyebrow"
-                value={texts.hero.eyebrow || INITIAL_TEXT.hero.eyebrow || "Volume 01"}
-                editable={badgeEditable || canEditText}
-                onChange={(value) => onUpdateText("hero", "eyebrow", value)}
-              />
-              <EditableText
-                as="h1"
-                className="editorial-display editorial-dropcap"
-                value={texts.hero.title}
-                editable={canEditText}
-                onChange={(value) => onUpdateText("hero", "title", value)}
-              />
-              <EditableText
-                as="p"
-                className="editorial-lede"
-                value={texts.hero.body}
-                editable={canEditText}
-                onChange={(value) => onUpdateText("hero", "body", value)}
-                multiline
-              />
-              <div className="editorial-hero-actions">
-                <button type="button" className="editorial-primary" onClick={() => goCatalogue(null)}>
+          <section className="brutal-hero">
+            <div className="brutal-hero-frame">
+              <div className="brutal-hero-copy">
+                <EditableText
+                  as="span"
+                  className="brutal-eyebrow"
+                  value={texts.hero.eyebrow || INITIAL_TEXT.hero.eyebrow || "Drop Baru // 2026"}
+                  editable={badgeEditable || canEditText}
+                  onChange={(value) => onUpdateText("hero", "eyebrow", value)}
+                />
+                <EditableText
+                  as="h1"
+                  className="brutal-display brutal-hero-title"
+                  value={texts.hero.title}
+                  editable={canEditText}
+                  onChange={(value) => onUpdateText("hero", "title", value)}
+                />
+                <EditableText
+                  as="p"
+                  className="brutal-lede"
+                  value={texts.hero.body}
+                  editable={canEditText}
+                  onChange={(value) => onUpdateText("hero", "body", value)}
+                  multiline
+                />
+                <div className="brutal-hero-actions">
+                  <button type="button" className="brutal-primary" onClick={() => goCatalogue(null)}>
+                    <EditableText
+                      as="span"
+                      value={texts.hero.ctaLabel || INITIAL_TEXT.hero.ctaLabel || "Belanja Sekarang"}
+                      editable={canEditText}
+                      onChange={(value) => onUpdateText("hero", "ctaLabel", value)}
+                    />
+                    <ArrowRight size={16} strokeWidth={2.5} />
+                  </button>
+                  <span className="brutal-hero-sub">
+                    {products.length} produk · Stok terbatas
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                className="brutal-hero-stage"
+                initial={{ opacity: 0, rotate: -2, y: 16 }}
+                animate={{ opacity: 1, rotate: 0, y: 0 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+              >
+                <div className="brutal-hero-image">
+                  <img src={heroImage} alt={heroProduct ? productText(heroProduct).name : displayStoreName} />
+                </div>
+                <span className="brutal-hero-sticker tone-lime">
+                  <Star size={14} strokeWidth={2.6} fill="currentColor" /> Pilihan
+                </span>
+                <span className="brutal-hero-sticker tone-cyan bottom">{products.length} ITEM</span>
+              </motion.div>
+            </div>
+            <MarqueeStrip paused={canEditText}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <span key={i} className="brutal-marquee-item">
                   <EditableText
                     as="span"
-                    value={texts.hero.ctaLabel || INITIAL_TEXT.hero.ctaLabel || "Baca katalog"}
+                    value={texts.hero.banner || INITIAL_TEXT.hero.banner || ""}
                     editable={canEditText}
-                    onChange={(value) => onUpdateText("hero", "ctaLabel", value)}
+                    onChange={(value) => onUpdateText("hero", "banner", value)}
                   />
-                  <ArrowRight size={16} />
-                </button>
-                <span className="editorial-hero-sub">
-                  {products.length} judul dalam edisi ini
                 </span>
-              </div>
-            </div>
-            <motion.figure
-              className="editorial-hero-figure"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <div className="editorial-hero-image">
-                <img src={heroImage} alt={heroProduct ? productText(heroProduct).name : displayStoreName} />
-              </div>
-              <figcaption>
-                <span>Plat I</span>
-                <em>
-                  {heroProduct ? productText(heroProduct).name : displayStoreName}
-                </em>
-              </figcaption>
-            </motion.figure>
+              ))}
+            </MarqueeStrip>
           </section>
         ) : null}
 
         {!hidden.categories ? (
-          <section className="editorial-section editorial-categories">
-            <header className="editorial-section-head">
-              <span className="editorial-eyebrow">
+          <section className="brutal-section brutal-categories">
+            <header className="brutal-section-head">
+              <div>
+                <span className="brutal-eyebrow">
+                  <EditableText
+                    as="span"
+                    value={texts.categories.eyebrow || "Kategori"}
+                    editable={canEditText}
+                    onChange={(value) => onUpdateText("categories", "eyebrow", value)}
+                  />
+                </span>
                 <EditableText
-                  as="span"
-                  value={texts.categories.eyebrow || "Bab"}
+                  as="h2"
+                  className="brutal-headline"
+                  value={texts.categories.title}
                   editable={canEditText}
-                  onChange={(value) => onUpdateText("categories", "eyebrow", value)}
+                  onChange={(value) => onUpdateText("categories", "title", value)}
                 />
-              </span>
-              <EditableText
-                as="h2"
-                className="editorial-headline"
-                value={texts.categories.title}
-                editable={canEditText}
-                onChange={(value) => onUpdateText("categories", "title", value)}
-              />
+              </div>
               <EditableText
                 as="p"
-                className="editorial-lede"
+                className="brutal-lede"
                 value={texts.categories.body}
                 editable={canEditText}
                 onChange={(value) => onUpdateText("categories", "body", value)}
@@ -715,42 +733,50 @@ export function StorefrontEditorialTemplate({
               />
             </header>
             {categories.length > 0 ? (
-              <ul className="editorial-category-list">
-                {categories.slice(0, 8).map(([category, items], index) => (
-                  <li key={category}>
-                    <button type="button" onClick={() => goCatalogue(category)}>
-                      <span className="editorial-category-num">{ordinal(index + 1)}</span>
-                      <span className="editorial-category-name">{titleCase(category)}</span>
-                      <span className="editorial-category-count">
+              <div className="brutal-category-grid">
+                {categories.slice(0, 8).map(([category, items], index) => {
+                  const tone = STICKER_TONES[index % STICKER_TONES.length];
+                  return (
+                    <button
+                      type="button"
+                      key={category}
+                      className={`brutal-category-card tone-${tone}`}
+                      onClick={() => goCatalogue(category)}
+                    >
+                      <span className="brutal-category-num">#{pad(index + 1)}</span>
+                      <strong>{titleCase(category)}</strong>
+                      <span className="brutal-category-meta">
                         {items.length} {texts.categories.productCountSuffix || "produk"}
                       </span>
-                      <ArrowUpRight size={18} />
+                      <span className="brutal-category-arrow">
+                        <ArrowUpRight size={20} strokeWidth={2.6} />
+                      </span>
                     </button>
-                  </li>
-                ))}
-              </ul>
+                  );
+                })}
+              </div>
             ) : (
-              <p className="editorial-empty">Kategori akan muncul setelah produk dipublikasikan.</p>
+              <p className="brutal-empty">Belum ada kategori — tambah produk untuk memunculkannya.</p>
             )}
           </section>
         ) : null}
 
         {!hidden.catalogue ? (
-          <section className="editorial-section editorial-featured">
-            <header className="editorial-section-head split">
+          <section className="brutal-section brutal-featured">
+            <header className="brutal-section-head split">
               <div>
-                <span className="editorial-eyebrow">Pilihan Editor</span>
+                <span className="brutal-eyebrow">Pilihan</span>
                 <EditableText
                   as="h2"
-                  className="editorial-headline"
-                  value={texts.catalogue.title || "Pilihan minggu ini"}
+                  className="brutal-headline"
+                  value={texts.catalogue.title || "Trending sekarang"}
                   editable={canEditText}
                   onChange={(value) => onUpdateText("catalogue", "title", value)}
                 />
               </div>
-              <button type="button" className="editorial-link" onClick={() => goCatalogue(null)}>
-                {texts.catalogue.viewAllLabel || "Lihat semua katalog"}
-                <ArrowRight size={14} />
+              <button type="button" className="brutal-link" onClick={() => goCatalogue(null)}>
+                {texts.catalogue.viewAllLabel || "Lihat semua"}
+                <ArrowRight size={14} strokeWidth={2.6} />
               </button>
             </header>
             <ProductGrid
@@ -762,9 +788,8 @@ export function StorefrontEditorialTemplate({
               onProduct={goProduct}
               cartItems={cartItems}
               onAddToCart={(product) => addToCart(product, 1)}
-              addLabel={texts.catalogue.addToCartLabel || "Tambah"}
+              addLabel={texts.catalogue.addToCartLabel || "Beli"}
               soldOutLabel={texts.catalogue.soldOutLabel || "Habis"}
-              variant="featured"
             />
           </section>
         ) : null}
@@ -786,7 +811,6 @@ function ProductGrid({
   onAddToCart,
   addLabel,
   soldOutLabel,
-  variant = "default",
 }: {
   products: Product[];
   currency: string;
@@ -798,32 +822,32 @@ function ProductGrid({
   onAddToCart: (product: Product) => void;
   addLabel: string;
   soldOutLabel: string;
-  variant?: "default" | "featured";
 }) {
-  if (!products.length) return <div className="editorial-empty">Tidak ada produk pada filter ini.</div>;
+  if (!products.length) return <div className="brutal-empty">Tidak ada produk pada filter ini.</div>;
   return (
-    <ul className={`editorial-product-grid ${variant === "featured" ? "is-featured" : ""}`}>
+    <ul className="brutal-product-grid">
       {products.map((product, index) => {
         const copy = productText(product);
-        const description = copy.subtitle || copy.description || "Bagian dari katalog editor.";
+        const description = copy.subtitle || copy.description || "Bagian dari koleksi terbaru.";
         const limit = stockLimit(product);
         const inCart = cartItems[product.id] ?? 0;
         const disabled = limit === 0 || limit - inCart <= 0;
+        const tone = STICKER_TONES[index % STICKER_TONES.length];
         return (
           <li key={product.id}>
             <motion.article
-              className="editorial-product-card"
-              whileHover={{ y: -4 }}
+              className="brutal-product-card"
+              whileHover={{ x: -4, y: -4 }}
               onClick={() => onProduct(product.id)}
               role="button"
               tabIndex={0}
             >
-              <div className="editorial-product-image">
+              <div className="brutal-product-image">
                 <img src={productThumbnail(product) || FALLBACK_IMAGE} alt={copy.name} />
-                <span className="editorial-product-folio">N° {ordinal(index + 1)}</span>
-                {product.discountedPrice ? <b className="editorial-product-flag">Sale</b> : null}
+                <span className={`brutal-product-sticker tone-${tone}`}>#{pad(index + 1)}</span>
+                {product.discountedPrice ? <b className="brutal-product-flag">Sale</b> : null}
               </div>
-              <div className="editorial-product-body">
+              <div className="brutal-product-body">
                 <EditableText
                   as="h3"
                   value={copy.name}
@@ -839,12 +863,12 @@ function ProductGrid({
                   }
                   multiline
                 />
-                <div className="editorial-product-foot">
+                <div className="brutal-product-foot">
                   <strong>{formatPrice(effectivePrice(product), currency)}</strong>
                   {product.discountedPrice ? <s>{formatPrice(product.price, currency)}</s> : null}
                   <button
                     type="button"
-                    className="editorial-card-add"
+                    className="brutal-card-add"
                     disabled={disabled}
                     onClick={(event) => {
                       event.stopPropagation();
@@ -854,7 +878,7 @@ function ProductGrid({
                     aria-label={disabled ? soldOutLabel : addLabel}
                   >
                     {disabled ? soldOutLabel : addLabel}
-                    {disabled ? null : <ArrowUpRight size={12} />}
+                    {disabled ? null : <ArrowRight size={12} strokeWidth={2.6} />}
                   </button>
                 </div>
               </div>

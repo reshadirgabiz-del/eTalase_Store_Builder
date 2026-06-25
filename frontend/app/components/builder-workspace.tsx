@@ -30,26 +30,47 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import splashImage from "../../assets/splash.png";
 import etalaseLogo from "../../assets/logo.png";
-import templateClassicShot from "../../assets/templateScreenshots/storefront-classic.png";
-import templateModernShot from "../../assets/templateScreenshots/storefront-modern.png";
-import templatePastelShot from "../../assets/templateScreenshots/storefront-pastel.png";
-import templateCyberShot from "../../assets/templateScreenshots/storefront-cyber-glitch.png";
-import templatePastelBauhausShot from "../../assets/templateScreenshots/storefront-pastel-bauhaus.png";
+import templateClassicShot from "../../assets/templateScreenshots/classic.png";
+import templateModernShot from "../../assets/templateScreenshots/modern.png";
+import templatePastelShot from "../../assets/templateScreenshots/pastel.png";
+import templateCyberShot from "../../assets/templateScreenshots/cyber.png";
+import templatePastelBauhausShot from "../../assets/templateScreenshots/pastel-bauhaus.png";
 
-import templateEditorialShot from "../../assets/templateScreenshots/storefront-editorial.png";
-import templateNeonBrutaliseShot from "../../assets/templateScreenshots/storefront-neon-brutalist.png";
+import templateEditorialShot from "../../assets/templateScreenshots/editorial.png";
+import templateNeonBrutaliseShot from "../../assets/templateScreenshots/brutalist.png";
 
 const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
-  "storefront-classic": templateClassicShot,
-  "storefront-modern": templateModernShot,
-  "storefront-bauhaus": templateModernShot,
-  "storefront-pastel": templatePastelShot,
-  "storefront-pastel-bauhaus": templatePastelBauhausShot,
-  "storefront-mosaic": templatePastelShot,
-  "storefront-noir": templateEditorialShot,
-  "storefront-cyber": templateCyberShot,
-  "storefront-editorial": templateEditorialShot,
-  "storefront-brutalist": templateNeonBrutaliseShot,
+  "classic": templateClassicShot,
+  "modern": templateModernShot,
+  "bauhaus": templateModernShot,
+  "pastel": templatePastelShot,
+  "pastel-bauhaus": templatePastelBauhausShot,
+  "mosaic": templatePastelShot,
+  "noir": templateEditorialShot,
+  "cyber": templateCyberShot,
+  "editorial": templateEditorialShot,
+  "brutalist": templateNeonBrutaliseShot,
+};
+
+const TEMPLATE_PREVIEW_PALETTES: Partial<Record<TemplateId, {
+  brand: string;
+  brandStrong: string;
+  accent: string;
+  pageBg: string;
+  ink: string;
+}>> = {
+  "classic": { brand: "#6f4246", brandStrong: "#563136", accent: "#c45f67", pageBg: "#fcf7f5", ink: "#3e3033" },
+  "modern": { brand: "#1e40af", brandStrong: "#1e3a8a", accent: "#f97316", pageBg: "#fefcf5", ink: "#0a0a0a" },
+  "bauhaus": { brand: "#e63946", brandStrong: "#b8202d", accent: "#ffd400", pageBg: "#f4f1ea", ink: "#0a0a0a" },
+  "pastel": { brand: "#be185d", brandStrong: "#9f1239", accent: "#fde68a", pageBg: "#fff7ed", ink: "#3d1322" },
+  "pastel-bauhaus": { brand: "#e63946", brandStrong: "#b8202d", accent: "#ffd400", pageBg: "#f4f1ea", ink: "#0a0a0a" },
+  "mosaic": { brand: "#0369a1", brandStrong: "#075985", accent: "#f97316", pageBg: "#f0f9ff", ink: "#0c1e2a" },
+  "noir": { brand: "#1e1b4b", brandStrong: "#0f0c2e", accent: "#fbbf24", pageBg: "#0f172a", ink: "#f1f5f9" },
+  "cyber": { brand: "#ff006e", brandStrong: "#c5005a", accent: "#00f0ff", pageBg: "#f5f5f0", ink: "#0a0a0f" },
+  "editorial": { brand: "#1f1d1a", brandStrong: "#0a0a0a", accent: "#b04a2a", pageBg: "#fbf8f1", ink: "#181612" },
+  "brutalist": { brand: "#0a0a0a", brandStrong: "#000000", accent: "#ccff00", pageBg: "#f2f2ed", ink: "#0a0a0a" },
+  "glass": { brand: "#6366f1", brandStrong: "#4338ca", accent: "#22d3ee", pageBg: "#eef2ff", ink: "#1e1b4b" },
+  "artisan": { brand: "#8a5a3b", brandStrong: "#5e3a22", accent: "#c97b3f", pageBg: "#f5ecdc", ink: "#2e1f12" },
 };
 import { createEtalaseClient } from "etalase-module";
 import {
@@ -80,6 +101,7 @@ import {
   FONT_OPTIONS,
   TEMPLATE_LAYOUT_LABEL,
   colorSchemes,
+  getTemplateDefaultScheme,
   templates,
   type ColorScheme,
   type TemplateId,
@@ -240,7 +262,7 @@ export function BuilderWorkspace() {
   }
 
   const [screen, setScreen] = useState<Screen>("templates");
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("storefront-classic");
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("classic");
   const [previewTemplate, setPreviewTemplate] = useState<TemplateId | null>(null);
   const [customZip, setCustomZip] = useState<File | null>(null);
   const [customUploadModalOpen, setCustomUploadModalOpen] = useState(false);
@@ -423,6 +445,7 @@ export function BuilderWorkspace() {
     if (id !== "custom-upload") {
       setScreen("editor");
       setPreviewMode(false);
+      setScheme(getTemplateDefaultScheme(id));
     }
   }
 
@@ -769,7 +792,7 @@ export function BuilderWorkspace() {
                     <Text size="xs" c="dimmed" mt={4}>
                       Layout dan teks dikunci kecuali badge hero. Tema dan font tetap dapat diedit.
                     </Text>
-                    {template.id === "storefront-brutalist" ? (
+                    {template.id === "brutalist" ? (
                       <Text size="xs" c="dimmed" mt={4}>
                         Tip: marquee berjalan di hero dapat diklik langsung di preview untuk mengubah teksnya.
                       </Text>
@@ -1027,7 +1050,7 @@ export function BuilderWorkspace() {
       )}
 
       <Modal opened={Boolean(previewTemplate)} onClose={() => setPreviewTemplate(null)} size="90vw" title={previewTemplateData.name}>
-        <div className="template-modal-preview" style={themeStyle}>
+        <div className="template-modal-preview" style={buildThemeStyle(getTemplateDefaultScheme(previewTemplateData.id))}>
           <StorefrontPreview
             templateId={previewTemplateData.id}
             storeName={storeName}
@@ -1326,47 +1349,114 @@ function TemplateSelection({
       ) : null}
 
       <div className="catalogue-grid">
-        {visibleTemplates.map((template) => (
-          <Paper className="catalogue-template-card" key={template.id} withBorder>
-            <button
-              className="catalogue-card-thumb"
-              type="button"
-              disabled={disabled}
-              onClick={() => onPreview(template.id)}
-              aria-label={`Preview ${template.name}`}
+        {visibleTemplates.map((template) => {
+          const palette = TEMPLATE_PREVIEW_PALETTES[template.id];
+          const cardStyle = palette
+            ? ({
+                "--template-card-bg": palette.pageBg,
+                "--template-card-brand": palette.brand,
+                "--template-card-brand-strong": palette.brandStrong,
+                "--template-card-accent": palette.accent,
+                "--template-card-ink": palette.ink,
+              } as React.CSSProperties)
+            : undefined;
+          return (
+            <Paper
+              className="catalogue-template-card"
+              key={template.id}
+              withBorder
+              style={
+                palette
+                  ? { ...cardStyle, background: palette.pageBg, borderColor: `color-mix(in oklab, ${palette.brand} 35%, transparent)` }
+                  : undefined
+              }
             >
-              <img src={(TEMPLATE_SCREENSHOTS[template.id] ?? splashImage).src} alt={`Pratinjau ${template.name}`} />
-              <span className="catalogue-card-overlay">Pratinjau & pilih →</span>
-            </button>
-            <Stack p="lg" gap="sm" className="catalogue-template-body">
-              <Group justify="space-between" align="flex-start" wrap="nowrap">
-                <div>
-                  <Title order={3}>{template.name}</Title>
-                  <Text size="xs" c="dimmed" mt={4}>
-                    {template.capabilities.slice(0, 2).join(" · ")}
-                  </Text>
-                </div>
-                <Badge
-                  color={template.layout === "catalogue-first" ? "grape" : "teal"}
-                  variant="light"
+              <button
+                className="catalogue-card-thumb"
+                type="button"
+                disabled={disabled}
+                onClick={() => onPreview(template.id)}
+                aria-label={`Preview ${template.name}`}
+                style={palette ? { background: `linear-gradient(135deg, ${palette.pageBg}, color-mix(in oklab, ${palette.accent} 30%, ${palette.pageBg}))` } : undefined}
+              >
+                <img src={(TEMPLATE_SCREENSHOTS[template.id] ?? splashImage).src} alt={`Pratinjau ${template.name}`} />
+                <span
+                  className="catalogue-card-overlay"
+                  style={palette ? { background: palette.brand, color: "#ffffff" } : undefined}
                 >
-                  {template.layout ? TEMPLATE_LAYOUT_LABEL[template.layout] : template.status}
-                </Badge>
-              </Group>
-              <Text size="sm" c="dimmed" lineClamp={3}>
-                {template.description}
-              </Text>
-              <Group grow mt="xs" className="catalogue-template-actions">
-                <Button variant="outline" color="dark" leftSection={<Maximize2 size={16} />} disabled={disabled} onClick={() => onPreview(template.id)}>
-                  Preview
-                </Button>
-                <Button color="dark" disabled={disabled} onClick={() => onSelect(template.id)}>
-                  Pilih
-                </Button>
-              </Group>
-            </Stack>
-          </Paper>
-        ))}
+                  Pratinjau & pilih →
+                </span>
+              </button>
+              <Stack p="lg" gap="sm" className="catalogue-template-body">
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
+                  <div>
+                    <Title order={3} style={palette ? { color: palette.ink } : undefined}>{template.name}</Title>
+                    <Text size="xs" c="dimmed" mt={4}>
+                      {template.capabilities.slice(0, 2).join(" · ")}
+                    </Text>
+                  </div>
+                  <Badge
+                    variant="light"
+                    style={
+                      palette
+                        ? {
+                            background: `color-mix(in oklab, ${palette.brand} 18%, transparent)`,
+                            color: palette.brandStrong,
+                            borderColor: `color-mix(in oklab, ${palette.brand} 30%, transparent)`,
+                          }
+                        : undefined
+                    }
+                  >
+                    {template.layout ? TEMPLATE_LAYOUT_LABEL[template.layout] : template.status}
+                  </Badge>
+                </Group>
+                {palette ? (
+                  <Group gap={6} mt={2}>
+                    {[palette.brand, palette.brandStrong, palette.accent, palette.pageBg, palette.ink].map((color, i) => (
+                      <span
+                        key={i}
+                        aria-hidden
+                        style={{
+                          display: "inline-block",
+                          width: 14,
+                          height: 14,
+                          borderRadius: 4,
+                          background: color,
+                          border: "1px solid color-mix(in oklab, currentColor 20%, transparent)",
+                        }}
+                      />
+                    ))}
+                  </Group>
+                ) : null}
+                <Text size="sm" c="dimmed" lineClamp={3}>
+                  {template.description}
+                </Text>
+                <Group grow mt="xs" className="catalogue-template-actions">
+                  <Button
+                    variant="outline"
+                    leftSection={<Maximize2 size={16} />}
+                    disabled={disabled}
+                    onClick={() => onPreview(template.id)}
+                    style={
+                      palette
+                        ? { borderColor: palette.brand, color: palette.brandStrong }
+                        : undefined
+                    }
+                  >
+                    Preview
+                  </Button>
+                  <Button
+                    disabled={disabled}
+                    onClick={() => onSelect(template.id)}
+                    style={palette ? { background: palette.brand, color: "#ffffff" } : undefined}
+                  >
+                    Pilih
+                  </Button>
+                </Group>
+              </Stack>
+            </Paper>
+          );
+        })}
 
       </div>
 

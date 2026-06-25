@@ -280,7 +280,7 @@ function CartDrawer({
   );
 }
 
-export function StorefrontPastelTemplate({
+export function PastelTemplate({
   storeName,
   logoUrl,
   storeId,

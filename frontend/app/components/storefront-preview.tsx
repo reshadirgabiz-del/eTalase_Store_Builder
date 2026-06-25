@@ -21,11 +21,13 @@ import {
 } from "lucide-react";
 import etalaseLogo from "../../assets/logo.png";
 import type { ColorScheme, TemplateId } from "@/lib/templates";
-import { StorefrontBauhausTemplate } from "./storefront-bauhaus-template";
-import { StorefrontPastelTemplate } from "./storefront-pastel-template";
-import { StorefrontCyberTemplate } from "./storefront-cyber-template";
-import { StorefrontEditorialTemplate } from "./storefront-editorial-template";
-import { StorefrontBrutalistTemplate } from "./storefront-brutalist-template";
+import { BauhausTemplate } from "./bauhaus-template";
+import { PastelTemplate } from "./pastel-template";
+import { CyberTemplate } from "./cyber-template";
+import { EditorialTemplate } from "./editorial-template";
+import { BrutalistTemplate } from "./brutalist-template";
+import { GlassTemplate } from "./glass-template";
+import { ArtisanTemplate } from "./artisan-template";
 
 export type SectionId = "hero" | "categories" | "catalogue" | "footer";
 export type PreviewPage = "home" | "catalogue" | "product";
@@ -401,6 +403,7 @@ type EditableTextProps = {
   as?: ElementType;
   className?: string;
   multiline?: boolean;
+  style?: CSSProperties;
 };
 
 export function EditableText({
@@ -410,6 +413,7 @@ export function EditableText({
   as: Tag = "span",
   className,
   multiline = false,
+  style,
 }: EditableTextProps) {
   const ref = useRef<HTMLElement | null>(null);
 
@@ -421,7 +425,7 @@ export function EditableText({
   }, [value]);
 
   if (!editable) {
-    return <Tag className={className}>{value}</Tag>;
+    return <Tag className={className} style={style}>{value}</Tag>;
   }
 
   const Element = Tag as ElementType;
@@ -429,6 +433,7 @@ export function EditableText({
     <Element
       ref={ref}
       className={`${className ?? ""} editable-text`}
+      style={style}
       contentEditable
       suppressContentEditableWarning
       spellCheck={false}
@@ -762,11 +767,13 @@ function FooterBlock({
 }
 
 export const TEMPLATES_WITH_STATIC_HERO: TemplateId[] = [
-  "storefront-modern",
-  "storefront-bauhaus",
-  "storefront-cyber",
-  "storefront-editorial",
-  "storefront-brutalist",
+  "modern",
+  "bauhaus",
+  "cyber",
+  "editorial",
+  "brutalist",
+  "glass",
+  "artisan",
 ];
 
 export function templateSupportsHeroImage(templateId: TemplateId | undefined) {
@@ -825,7 +832,7 @@ export function StorefrontSkeleton({
 }
 
 export function StorefrontPreview({
-  templateId = "storefront-classic",
+  templateId = "classic",
   storeName,
   logoUrl,
   storeId,
@@ -873,18 +880,20 @@ export function StorefrontPreview({
 }) {
   if (loading) {
     const wrapperByTemplate: Record<string, string> = {
-      "storefront-classic": "storefront-page",
-      "storefront-modern": "bauhaus-page",
-      "storefront-bauhaus": "bauhaus-page",
-      "storefront-pastel": "pastel-store",
-      "storefront-pastel-bauhaus": "pastel-store is-bauhaus",
-      "storefront-mosaic": "pastel-store is-mosaic",
-      "storefront-noir": "pastel-store is-noir",
-      "storefront-cyber": "cyber-page",
-      "storefront-editorial": "editorial-page",
-      "storefront-brutalist": "brutal-page",
+      "classic": "storefront-page",
+      "modern": "bauhaus-page",
+      "bauhaus": "bauhaus-page",
+      "pastel": "pastel-store",
+      "pastel-bauhaus": "pastel-store is-bauhaus",
+      "mosaic": "pastel-store is-mosaic",
+      "noir": "pastel-store is-noir",
+      "cyber": "cyber-page",
+      "editorial": "editorial-page",
+      "brutalist": "brutal-page",
+      "glass": "glass-page",
+      "artisan": "artisan-page",
     };
-    const wrapperClass = wrapperByTemplate[templateId ?? "storefront-classic"] ?? "storefront-page";
+    const wrapperClass = wrapperByTemplate[templateId ?? "classic"] ?? "storefront-page";
     return <StorefrontSkeleton wrapperClass={wrapperClass} showHero={page === "home"} cardCount={page === "product" ? 0 : 8} />;
   }
   const isTextEditMode = editable && textEditMode !== false;
@@ -921,9 +930,9 @@ export function StorefrontPreview({
     ? products.filter((product) => (product.tags ?? []).includes(selectedCategory))
     : products;
 
-  if (templateId === "storefront-modern" || templateId === "storefront-bauhaus") {
+  if (templateId === "modern" || templateId === "bauhaus") {
     return (
-      <StorefrontBauhausTemplate
+      <BauhausTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}
@@ -948,9 +957,9 @@ export function StorefrontPreview({
     );
   }
 
-  if (templateId === "storefront-cyber") {
+  if (templateId === "cyber") {
     return (
-      <StorefrontCyberTemplate
+      <CyberTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}
@@ -975,9 +984,9 @@ export function StorefrontPreview({
     );
   }
 
-  if (templateId === "storefront-editorial") {
+  if (templateId === "editorial") {
     return (
-      <StorefrontEditorialTemplate
+      <EditorialTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}
@@ -1002,9 +1011,63 @@ export function StorefrontPreview({
     );
   }
 
-  if (templateId === "storefront-brutalist") {
+  if (templateId === "glass") {
     return (
-      <StorefrontBrutalistTemplate
+      <GlassTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "artisan") {
+    return (
+      <ArtisanTemplate
+        storeName={storeName}
+        logoUrl={logoUrl}
+        storeId={storeId}
+        settings={settings}
+        products={products}
+        productTextOverrides={productTextOverrides}
+        texts={texts}
+        hidden={hidden}
+        currency={currency}
+        editable={editable}
+        textEditMode={textEditMode}
+        selectedSection={selectedSection}
+        onSelectSection={onSelectSection}
+        onToggleHidden={onToggleHidden}
+        onUpdateText={onUpdateText}
+        onUpdateProductText={onUpdateProductText}
+        page={page}
+        onNavigate={onNavigate}
+        badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
+      />
+    );
+  }
+
+  if (templateId === "brutalist") {
+    return (
+      <BrutalistTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}
@@ -1030,13 +1093,13 @@ export function StorefrontPreview({
   }
 
   if (
-    templateId === "storefront-pastel" ||
-    templateId === "storefront-pastel-bauhaus" ||
-    templateId === "storefront-mosaic" ||
-    templateId === "storefront-noir"
+    templateId === "pastel" ||
+    templateId === "pastel-bauhaus" ||
+    templateId === "mosaic" ||
+    templateId === "noir"
   ) {
     return (
-      <StorefrontPastelTemplate
+      <PastelTemplate
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeId}
@@ -1057,11 +1120,11 @@ export function StorefrontPreview({
         onNavigate={onNavigate}
         badgeEditable={badgeEditable}
         variant={
-          templateId === "storefront-pastel-bauhaus"
+          templateId === "pastel-bauhaus"
             ? "bauhaus"
-            : templateId === "storefront-mosaic"
+            : templateId === "mosaic"
               ? "mosaic"
-              : templateId === "storefront-noir"
+              : templateId === "noir"
                 ? "noir"
                 : "default"
         }

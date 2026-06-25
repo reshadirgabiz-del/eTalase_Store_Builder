@@ -37,7 +37,7 @@ const stagger = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.07,
+      staggerChildren: 0.06,
     },
   },
 };
@@ -96,7 +96,7 @@ function encodeCheckoutItems(items: { productId: string; quantity: number }[]) {
   return window.btoa(unescape(encodeURIComponent(json)));
 }
 
-function BauhausSection({
+function CyberSection({
   id,
   selected,
   editable,
@@ -118,7 +118,7 @@ function BauhausSection({
   const showChips = editable && !textEditMode;
   return (
     <div
-      className={`bauhaus-section ${showChips ? "can-edit" : ""} ${textEditMode ? "text-edit-mode" : ""} ${selected && showChips ? "is-selected" : ""}`}
+      className={`cyber-section ${showChips ? "can-edit" : ""} ${textEditMode ? "text-edit-mode" : ""} ${selected && showChips ? "is-selected" : ""}`}
       onClick={(event) => {
         if (!editable || textEditMode) return;
         event.stopPropagation();
@@ -126,14 +126,14 @@ function BauhausSection({
       }}
     >
       {showChips ? (
-        <div className="bauhaus-chip-bar" onClick={(event) => event.stopPropagation()}>
-          <button type="button" className="bauhaus-chip" onClick={() => onSelect(id)}>
+        <div className="cyber-chip-bar" onClick={(event) => event.stopPropagation()}>
+          <button type="button" className="cyber-chip" onClick={() => onSelect(id)}>
             <PanelRightOpen size={12} />
             {SECTION_LABEL[id]}
           </button>
           <button
             type="button"
-            className="bauhaus-chip ghost"
+            className="cyber-chip ghost"
             onClick={() => onToggleHidden(id, !hidden)}
             title={hidden ? "Tampilkan bagian" : "Sembunyikan bagian"}
           >
@@ -146,7 +146,42 @@ function BauhausSection({
   );
 }
 
-function BauhausHeader({
+function GlitchText({
+  as: Tag = "h1",
+  value,
+  editable,
+  onChange,
+  className = "",
+  multiline = false,
+}: {
+  as?: "h1" | "h2" | "h3" | "span";
+  value: string;
+  editable: boolean;
+  onChange: (next: string) => void;
+  className?: string;
+  multiline?: boolean;
+}) {
+  if (editable) {
+    return (
+      <EditableText
+        as={Tag}
+        className={`cyber-glitch ${className}`}
+        value={value}
+        editable
+        onChange={onChange}
+        multiline={multiline}
+      />
+    );
+  }
+  const TagElement = Tag as unknown as React.ElementType;
+  return (
+    <TagElement className={`cyber-glitch ${className}`} data-text={value}>
+      {value}
+    </TagElement>
+  );
+}
+
+function CyberHeader({
   storeName,
   logoUrl,
   page,
@@ -173,13 +208,13 @@ function BauhausHeader({
   ];
   return (
     <motion.header
-      className="bauhaus-header"
+      className="cyber-header"
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      <button type="button" className="bauhaus-brand" onClick={() => onNavigate("home")}>
-        <span className="bauhaus-brand-mark" aria-hidden="true">
+      <button type="button" className="cyber-brand" onClick={() => onNavigate("home")}>
+        <span className="cyber-brand-mark" aria-hidden="true">
           {logoUrl ? <img src={logoUrl} alt="" /> : <em>{storeName.charAt(0).toUpperCase()}</em>}
         </span>
         <EditableText
@@ -189,7 +224,7 @@ function BauhausHeader({
           onChange={(value) => onUpdateText("hero", "storeName", value)}
         />
       </button>
-      <nav className="bauhaus-nav">
+      <nav className="cyber-nav">
         {items.map((item) => (
           <button
             key={item.page}
@@ -197,13 +232,7 @@ function BauhausHeader({
             className={page === item.page ? "is-active" : ""}
             onClick={() => onNavigate(item.page)}
           >
-            {page === item.page ? (
-              <motion.span
-                className="bauhaus-nav-indicator"
-                layoutId="bauhaus-nav-indicator"
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
-              />
-            ) : null}
+            <span className="cyber-nav-glow" aria-hidden="true" />
             <EditableText
               as="span"
               value={item.label}
@@ -213,7 +242,7 @@ function BauhausHeader({
           </button>
         ))}
       </nav>
-      <motion.button type="button" className="bauhaus-cart" onClick={onCartClick} whileTap={{ scale: 0.97 }}>
+      <motion.button type="button" className="cyber-cart" onClick={onCartClick} whileTap={{ scale: 0.97 }}>
         <ShoppingBag size={16} />
         <EditableText
           as="strong"
@@ -227,7 +256,7 @@ function BauhausHeader({
   );
 }
 
-function BauhausHero({
+function CyberHero({
   eyebrow,
   title,
   body,
@@ -258,55 +287,71 @@ function BauhausHero({
 }) {
   return (
     <motion.section
-      className="bauhaus-hero"
+      className="cyber-hero"
       variants={stagger}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.35 }}
     >
-      <div className="bauhaus-hero-grid">
-        <motion.div className="bauhaus-hero-copy" variants={fadeUp} transition={{ duration: 0.45, ease: "easeOut" }}>
-          <EditableText
-            as="span"
-            className="bauhaus-eyebrow"
-            value={eyebrow}
-            editable={eyebrowEditable}
-            onChange={onEyebrowChange}
-          />
-          <EditableText
-            as="h1"
-            className="bauhaus-hero-title"
-            value={title}
-            editable={editable}
-            onChange={onTitleChange}
-          />
+      <div className="cyber-hero-grid" aria-hidden="true" />
+      <div className="cyber-hero-inner">
+        <motion.div className="cyber-hero-copy" variants={fadeUp} transition={{ duration: 0.45, ease: "easeOut" }}>
+          <span className="cyber-eyebrow">
+            <span className="cyber-eyebrow-dot" aria-hidden="true" />
+            <EditableText
+              as="span"
+              value={eyebrow}
+              editable={eyebrowEditable}
+              onChange={onEyebrowChange}
+            />
+          </span>
+          <GlitchText as="h1" className="cyber-hero-title" value={title} editable={editable} onChange={onTitleChange} />
           <EditableText
             as="p"
-            className="bauhaus-hero-body"
+            className="cyber-hero-body"
             value={body}
             editable={editable}
             onChange={onBodyChange}
             multiline
           />
-          <motion.button type="button" className="bauhaus-button" onClick={onCta} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-            <EditableText as="span" value={ctaLabel} editable={editable} onChange={onCtaLabelChange} />
-            <ArrowRight size={16} />
-          </motion.button>
-        </motion.div>
-        <motion.div
-          className="bauhaus-hero-art"
-          variants={fadeUp}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          {heroImage ? (
-            <motion.div
-              className="bauhaus-hero-photo"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          <div className="cyber-hero-actions">
+            <motion.button
+              type="button"
+              className="cyber-button"
+              onClick={onCta}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <img src={heroImage} alt={productName} />
-            </motion.div>
-          ) : null}
+              <EditableText as="span" value={ctaLabel} editable={editable} onChange={onCtaLabelChange} />
+              <ArrowRight size={16} />
+            </motion.button>
+            <span className="cyber-coord" aria-hidden="true">
+              <em>// LAT 0.000 LON 0.000</em>
+            </span>
+          </div>
+        </motion.div>
+        <motion.div className="cyber-hero-art" variants={fadeUp} transition={{ duration: 0.5, ease: "easeOut" }}>
+          <div className="cyber-hero-frame">
+            <span className="cyber-frame-corner top-left" aria-hidden="true" />
+            <span className="cyber-frame-corner top-right" aria-hidden="true" />
+            <span className="cyber-frame-corner bottom-left" aria-hidden="true" />
+            <span className="cyber-frame-corner bottom-right" aria-hidden="true" />
+            {heroImage ? (
+              <motion.div
+                className="cyber-hero-photo"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <img src={heroImage} alt={productName} />
+                <span className="cyber-scanline" aria-hidden="true" />
+              </motion.div>
+            ) : (
+              <div className="cyber-hero-placeholder">{productName.charAt(0)}</div>
+            )}
+            <span className="cyber-frame-id" aria-hidden="true">
+              ID://00.01
+            </span>
+          </div>
         </motion.div>
       </div>
     </motion.section>
@@ -365,7 +410,7 @@ function CartDrawer({
   return (
     <div className={`cart-overlay ${open ? "is-open" : ""}`} aria-hidden={!open}>
       <button className="cart-scrim" type="button" onClick={onClose} aria-label="Tutup keranjang" />
-      <aside className="cart-drawer bauhaus-cart-drawer" aria-label="Keranjang">
+      <aside className="cart-drawer cyber-cart-drawer" aria-label="Keranjang">
         <div className="cart-drawer-header">
           <div>
             <EditableText
@@ -430,7 +475,7 @@ function CartDrawer({
               />
               <strong>{formatPrice(total, currency)}</strong>
             </div>
-            <button className="cart-checkout bauhaus-button" type="button" onClick={handleCheckoutClick}>
+            <button className="cart-checkout cyber-button" type="button" onClick={handleCheckoutClick}>
               <EditableText
                 as="span"
                 value={texts.catalogue.checkoutLabel || INITIAL_TEXT.catalogue.checkoutLabel || "Checkout"}
@@ -488,16 +533,16 @@ function CartDrawer({
   );
 }
 
-const CATEGORY_PALETTE: { bg: string; ink: string }[] = [
-  { bg: "var(--primary)", ink: "var(--primary-foreground)" },
-  { bg: "var(--accent)", ink: "var(--accent-foreground)" },
-  { bg: "var(--foreground)", ink: "var(--background)" },
-  { bg: "var(--card)", ink: "var(--foreground)" },
-  { bg: "var(--primary)", ink: "var(--primary-foreground)" },
-  { bg: "var(--accent)", ink: "var(--accent-foreground)" },
+const CATEGORY_TONES: ("primary" | "accent" | "ink")[] = [
+  "primary",
+  "accent",
+  "ink",
+  "accent",
+  "primary",
+  "ink",
 ];
 
-export function StorefrontBauhausTemplate({
+export function CyberTemplate({
   storeName,
   logoUrl,
   storeId,
@@ -588,7 +633,7 @@ export function StorefrontBauhausTemplate({
   }
 
   const header = (
-    <BauhausHeader
+    <CyberHeader
       storeName={storeName}
       logoUrl={logoUrl}
       page={page}
@@ -608,7 +653,7 @@ export function StorefrontBauhausTemplate({
   );
 
   const footer = !hidden.footer ? (
-    <BauhausSection
+    <CyberSection
       id="footer"
       selected={selectedSection === "footer"}
       editable={editable && page === "home"}
@@ -617,12 +662,12 @@ export function StorefrontBauhausTemplate({
       onSelect={onSelectSection}
       onToggleHidden={onToggleHidden}
     >
-      <footer className="bauhaus-footer">
-        <div className="bauhaus-footer-grid">
-          <div className="bauhaus-footer-copy">
-            <EditableText
+      <footer className="cyber-footer">
+        <div className="cyber-footer-grid">
+          <div className="cyber-footer-copy">
+            <GlitchText
               as="h3"
-              className="bauhaus-footer-title"
+              className="cyber-footer-title"
               value={texts.footer.title}
               editable={canEditText && page === "home"}
               onChange={(value) => onUpdateText("footer", "title", value)}
@@ -636,27 +681,28 @@ export function StorefrontBauhausTemplate({
             />
             <EditableText
               as="strong"
+              className="cyber-footer-store"
               value={displayStoreName}
               editable={canEditText && page === "home"}
               onChange={(value) => onUpdateText("hero", "storeName", value)}
             />
           </div>
-          <div className="bauhaus-footer-links">
+          <div className="cyber-footer-links">
             {(settings?.socialLinks ?? []).map((link) => (
               <a href={link.url} key={link.url} aria-label={link.platform}>
-                {link.platform}
+                <span aria-hidden="true">//</span> {link.platform}
               </a>
             ))}
           </div>
         </div>
-        <div className="bauhaus-footer-bottom">
+        <div className="cyber-footer-bottom">
           <a className="powered-by" href="https://app.e-talase.com" target="_blank" rel="noreferrer">
             Powered by <img src={etalaseLogo.src} alt="e-talase" />
           </a>
           <small>© {new Date().getFullYear()} {displayStoreName}. All rights reserved.</small>
         </div>
       </footer>
-    </BauhausSection>
+    </CyberSection>
   ) : null;
 
   const cartDrawer = (
@@ -677,18 +723,18 @@ export function StorefrontBauhausTemplate({
 
   if (page === "catalogue") {
     return (
-      <div className="bauhaus-page">
+      <div className="cyber-page">
         {header}
         <motion.section
-          className="bauhaus-catalogue"
+          className="cyber-catalogue"
           variants={stagger}
           initial="hidden"
           animate="show"
         >
-          <motion.div className="bauhaus-page-head" variants={fadeUp}>
-            <EditableText
+          <motion.div className="cyber-page-head" variants={fadeUp}>
+            <GlitchText
               as="h1"
-              className="bauhaus-h1"
+              className="cyber-h1"
               value={texts.catalogue.title}
               editable={canEditText}
               onChange={(value) => onUpdateText("catalogue", "title", value)}
@@ -702,7 +748,7 @@ export function StorefrontBauhausTemplate({
             />
           </motion.div>
           {categories.length > 0 ? (
-            <div className="bauhaus-tabs">
+            <div className="cyber-tabs">
               <button type="button" className={!selectedCategory ? "is-active" : ""} onClick={() => setSelectedCategory(null)}>
                 <EditableText
                   as="span"
@@ -723,14 +769,15 @@ export function StorefrontBauhausTemplate({
               ))}
             </div>
           ) : null}
-          <motion.div className="bauhaus-product-grid" variants={stagger}>
+          <motion.div className="cyber-product-grid" variants={stagger}>
             {filteredProducts.map((product, index) => {
               const copy = productText(product);
               const summary = copy.subtitle || copy.description || texts.catalogue.productFallback || INITIAL_TEXT.catalogue.productFallback || "Produk eTalase.";
+              const tone = CATEGORY_TONES[index % CATEGORY_TONES.length];
               return (
                 <motion.article
                   key={product.id}
-                  className="bauhaus-product-card"
+                  className={`cyber-product-card tone-${tone}`}
                   onClick={() => goProduct(product.id)}
                   role="button"
                   tabIndex={0}
@@ -738,21 +785,22 @@ export function StorefrontBauhausTemplate({
                   whileHover={{ y: -4 }}
                   whileTap={{ scale: 0.99 }}
                   transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                  style={{ "--card-accent": index % 3 === 0 ? "var(--primary)" : index % 3 === 1 ? "var(--accent)" : "var(--foreground)" } as CSSProperties}
                 >
-                  <div className="bauhaus-product-image">
+                  <div className="cyber-product-image">
                     {productGallery(product)[0] ? (
                       <img src={productGallery(product)[0]} alt={copy.name} />
                     ) : (
-                      <span className="bauhaus-product-placeholder">{copy.name.charAt(0)}</span>
+                      <span className="cyber-product-placeholder">{copy.name.charAt(0)}</span>
                     )}
-                    <span className="bauhaus-product-tag-row">
-                      {(product.tags ?? []).slice(0, 2).map((tag) => (
+                    <span className="cyber-product-meta">
+                      <em>#{String(index + 1).padStart(3, "0")}</em>
+                      {(product.tags ?? []).slice(0, 1).map((tag) => (
                         <span key={tag}>{tag}</span>
                       ))}
                     </span>
+                    <span className="cyber-scanline" aria-hidden="true" />
                   </div>
-                  <div className="bauhaus-product-body">
+                  <div className="cyber-product-body">
                     <EditableText
                       as="h3"
                       value={copy.name}
@@ -766,11 +814,11 @@ export function StorefrontBauhausTemplate({
                       onChange={(value) => onUpdateProductText(product.id, copy.subtitle ? "subtitle" : "description", value)}
                       multiline
                     />
-                    <div className="bauhaus-product-foot">
+                    <div className="cyber-product-foot">
                       <strong>{formatPrice(effectivePrice(product), currency)}</strong>
                       <button
                         type="button"
-                        className="bauhaus-card-add"
+                        className="cyber-card-add"
                         disabled={(() => { const left = stockLimit(product) - (cartItems[product.id] ?? 0); return stockLimit(product) === 0 || left <= 0; })()}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -802,10 +850,10 @@ export function StorefrontBauhausTemplate({
     const safeQuantity = boundedQuantity(productQuantity, Math.max(1, stock));
     const featuredCopy = featuredProduct ? productText(featuredProduct) : null;
     return (
-      <div className="bauhaus-page">
+      <div className="cyber-page">
         {header}
-        <motion.section className="bauhaus-product-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <button className="bauhaus-back" type="button" onClick={() => go("catalogue")}>
+        <motion.section className="cyber-product-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <button className="cyber-back" type="button" onClick={() => go("catalogue")}>
             <ChevronLeft size={14} />
             <EditableText
               as="span"
@@ -815,30 +863,35 @@ export function StorefrontBauhausTemplate({
             />
           </button>
           {featuredProduct ? (
-            <div className="bauhaus-product-detail">
-              <motion.div className="bauhaus-detail-gallery" initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}>
-                <motion.div className="bauhaus-detail-hero" whileHover={{ rotate: -1 }}>
+            <div className="cyber-product-detail">
+              <motion.div className="cyber-detail-gallery" initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}>
+                <div className="cyber-detail-hero">
+                  <span className="cyber-frame-corner top-left" aria-hidden="true" />
+                  <span className="cyber-frame-corner top-right" aria-hidden="true" />
+                  <span className="cyber-frame-corner bottom-left" aria-hidden="true" />
+                  <span className="cyber-frame-corner bottom-right" aria-hidden="true" />
                   {gallery[0] ? (
                     <img src={gallery[0]} alt={featuredCopy?.name ?? featuredProduct.name} />
                   ) : (
-                    <span className="bauhaus-product-placeholder">{(featuredCopy?.name ?? featuredProduct.name).charAt(0)}</span>
+                    <span className="cyber-product-placeholder">{(featuredCopy?.name ?? featuredProduct.name).charAt(0)}</span>
                   )}
-                </motion.div>
-                <div className="bauhaus-detail-thumbs">
+                  <span className="cyber-scanline" aria-hidden="true" />
+                </div>
+                <div className="cyber-detail-thumbs">
                   {gallery.slice(0, 4).map((src, i) => (
-                    <div key={`${src}-${i}`} className="bauhaus-detail-thumb">
+                    <div key={`${src}-${i}`} className="cyber-detail-thumb">
                       <img src={src} alt="" />
                     </div>
                   ))}
                 </div>
               </motion.div>
-              <motion.div className="bauhaus-detail-info" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}>
+              <motion.div className="cyber-detail-info" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}>
                 {(featuredProduct.tags ?? []).slice(0, 1).map((tag) => (
-                  <span key={tag} className="bauhaus-pill">
-                    {tag}
+                  <span key={tag} className="cyber-pill">
+                    <span aria-hidden="true">//</span> {tag}
                   </span>
                 ))}
-                <EditableText
+                <GlitchText
                   as="h1"
                   value={featuredCopy?.name ?? featuredProduct.name}
                   editable={canEditText}
@@ -847,18 +900,18 @@ export function StorefrontBauhausTemplate({
                 {featuredCopy?.subtitle ? (
                   <EditableText
                     as="p"
-                    className="bauhaus-detail-sub"
+                    className="cyber-detail-sub"
                     value={featuredCopy.subtitle}
                     editable={canEditText}
                     onChange={(value) => onUpdateProductText(featuredProduct.id, "subtitle", value)}
                     multiline
                   />
                 ) : null}
-                <div className="bauhaus-detail-price">
+                <div className="cyber-detail-price">
                   <strong>{formatPrice(effectivePrice(featuredProduct), currency)}</strong>
                   {featuredProduct.discountedPrice ? <s>{formatPrice(featuredProduct.price, currency)}</s> : null}
                 </div>
-                <p className="bauhaus-detail-desc">
+                <p className="cyber-detail-desc">
                   <EditableText
                     as="span"
                     value={featuredCopy?.description || texts.catalogue.productFallback || INITIAL_TEXT.catalogue.productFallback || "Deskripsi produk akan tampil di storefront aktif."}
@@ -867,14 +920,14 @@ export function StorefrontBauhausTemplate({
                     multiline
                   />
                 </p>
-                <div className="bauhaus-qty-row">
+                <div className="cyber-qty-row">
                   <EditableText
                     as="span"
                     value={texts.catalogue.quantityLabel || INITIAL_TEXT.catalogue.quantityLabel || "Jumlah"}
                     editable={canEditText}
                     onChange={(value) => onUpdateText("catalogue", "quantityLabel", value)}
                   />
-                  <div className="bauhaus-qty">
+                  <div className="cyber-qty">
                     <button
                       type="button"
                       onClick={() => setProductQuantity(safeQuantity - 1)}
@@ -902,7 +955,7 @@ export function StorefrontBauhausTemplate({
                 </div>
                 <motion.button
                   type="button"
-                  className="bauhaus-button bauhaus-button-block"
+                  className="cyber-button cyber-button-block"
                   disabled={stock === 0}
                   onClick={() => addToCart(featuredProduct, safeQuantity)}
                   whileHover={stock === 0 ? undefined : { y: -2 }}
@@ -936,11 +989,11 @@ export function StorefrontBauhausTemplate({
   }
 
   return (
-    <div className="bauhaus-page">
+    <div className="cyber-page">
       {header}
 
       {!hidden.hero ? (
-        <BauhausSection
+        <CyberSection
           id="hero"
           selected={selectedSection === "hero"}
           editable={editable}
@@ -949,7 +1002,7 @@ export function StorefrontBauhausTemplate({
           onSelect={onSelectSection}
           onToggleHidden={onToggleHidden}
         >
-          <BauhausHero
+          <CyberHero
             eyebrow={texts.hero.eyebrow || INITIAL_TEXT.hero.eyebrow || "Storefront unggulan"}
             title={texts.hero.title || displayStoreName}
             body={texts.hero.body}
@@ -964,11 +1017,11 @@ export function StorefrontBauhausTemplate({
             heroImage={heroImage}
             productName={featuredProduct ? productText(featuredProduct).name : displayStoreName}
           />
-        </BauhausSection>
+        </CyberSection>
       ) : null}
 
       {!hidden.categories && categories.length >= 2 ? (
-        <BauhausSection
+        <CyberSection
           id="categories"
           selected={selectedSection === "categories"}
           editable={editable}
@@ -978,16 +1031,16 @@ export function StorefrontBauhausTemplate({
           onToggleHidden={onToggleHidden}
         >
           <motion.section
-            className="bauhaus-categories"
+            className="cyber-categories"
             variants={stagger}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <motion.div className="bauhaus-section-head" variants={fadeUp}>
-              <EditableText
+            <motion.div className="cyber-section-head" variants={fadeUp}>
+              <GlitchText
                 as="h2"
-                className="bauhaus-h2"
+                className="cyber-h2"
                 value={texts.categories.title}
                 editable={canEditText}
                 onChange={(value) => onUpdateText("categories", "title", value)}
@@ -1000,22 +1053,21 @@ export function StorefrontBauhausTemplate({
                 multiline
               />
             </motion.div>
-            <motion.div className="bauhaus-category-grid" variants={stagger}>
+            <motion.div className="cyber-category-grid" variants={stagger}>
               {categories.slice(0, 6).map(([category, items], index) => {
-                const palette = CATEGORY_PALETTE[index % CATEGORY_PALETTE.length];
+                const tone = CATEGORY_TONES[index % CATEGORY_TONES.length];
                 return (
                   <motion.button
                     key={category}
                     type="button"
-                    className="bauhaus-category-card"
-                    style={{ background: palette.bg, color: palette.ink } as CSSProperties}
+                    className={`cyber-category-card tone-${tone}`}
                     onClick={() => goCatalogue(category)}
                     variants={fadeUp}
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 260, damping: 24 }}
                   >
-                    <span className="bauhaus-category-label">
+                    <span className="cyber-category-label">
                       <small>{String(index + 1).padStart(2, "0")}</small>
                       <strong>{titleCase(category)}</strong>
                       <em>
@@ -1034,11 +1086,11 @@ export function StorefrontBauhausTemplate({
               })}
             </motion.div>
           </motion.section>
-        </BauhausSection>
+        </CyberSection>
       ) : null}
 
       {!hidden.catalogue ? (
-        <BauhausSection
+        <CyberSection
           id="catalogue"
           selected={selectedSection === "catalogue"}
           editable={editable}
@@ -1048,16 +1100,16 @@ export function StorefrontBauhausTemplate({
           onToggleHidden={onToggleHidden}
         >
           <motion.section
-            className="bauhaus-featured"
+            className="cyber-featured"
             variants={stagger}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <motion.div className="bauhaus-section-head" variants={fadeUp}>
-              <EditableText
+            <motion.div className="cyber-section-head" variants={fadeUp}>
+              <GlitchText
                 as="h2"
-                className="bauhaus-h2"
+                className="cyber-h2"
                 value={texts.catalogue.title}
                 editable={canEditText}
                 onChange={(value) => onUpdateText("catalogue", "title", value)}
@@ -1070,14 +1122,15 @@ export function StorefrontBauhausTemplate({
                 multiline
               />
             </motion.div>
-            <motion.div className="bauhaus-product-grid" variants={stagger}>
+            <motion.div className="cyber-product-grid" variants={stagger}>
               {featured.map((product, index) => {
                 const copy = productText(product);
                 const summary = copy.subtitle || copy.description || texts.catalogue.productFallback || INITIAL_TEXT.catalogue.productFallback || "Produk eTalase.";
+                const tone = CATEGORY_TONES[index % CATEGORY_TONES.length];
                 return (
                   <motion.article
                     key={product.id}
-                    className="bauhaus-product-card"
+                    className={`cyber-product-card tone-${tone}`}
                     onClick={() => goProduct(product.id)}
                     role="button"
                     tabIndex={0}
@@ -1085,21 +1138,22 @@ export function StorefrontBauhausTemplate({
                     whileHover={{ y: -4 }}
                     whileTap={{ scale: 0.99 }}
                     transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                    style={{ "--card-accent": index % 3 === 0 ? "var(--primary)" : index % 3 === 1 ? "var(--accent)" : "var(--foreground)" } as CSSProperties}
                   >
-                    <div className="bauhaus-product-image">
+                    <div className="cyber-product-image">
                       {productGallery(product)[0] ? (
                         <img src={productGallery(product)[0]} alt={copy.name} />
                       ) : (
-                        <span className="bauhaus-product-placeholder">{copy.name.charAt(0)}</span>
+                        <span className="cyber-product-placeholder">{copy.name.charAt(0)}</span>
                       )}
-                      <span className="bauhaus-product-tag-row">
-                        {(product.tags ?? []).slice(0, 2).map((tag) => (
+                      <span className="cyber-product-meta">
+                        <em>#{String(index + 1).padStart(3, "0")}</em>
+                        {(product.tags ?? []).slice(0, 1).map((tag) => (
                           <span key={tag}>{tag}</span>
                         ))}
                       </span>
+                      <span className="cyber-scanline" aria-hidden="true" />
                     </div>
-                    <div className="bauhaus-product-body">
+                    <div className="cyber-product-body">
                       <EditableText
                         as="h3"
                         value={copy.name}
@@ -1113,17 +1167,31 @@ export function StorefrontBauhausTemplate({
                         onChange={(value) => onUpdateProductText(product.id, copy.subtitle ? "subtitle" : "description", value)}
                         multiline
                       />
-                      <div className="bauhaus-product-foot">
+                      <div className="cyber-product-foot">
                         <strong>{formatPrice(effectivePrice(product), currency)}</strong>
-                        <span className="bauhaus-cta-dot" aria-hidden="true" />
+                        <button
+                          type="button"
+                          className="cyber-card-add"
+                          disabled={(() => { const left = stockLimit(product) - (cartItems[product.id] ?? 0); return stockLimit(product) === 0 || left <= 0; })()}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            const left = stockLimit(product) - (cartItems[product.id] ?? 0);
+                            if (stockLimit(product) === 0 || left <= 0) return;
+                            addToCart(product, 1);
+                          }}
+                          aria-label="Tambah ke keranjang"
+                        >
+                          <ShoppingBag size={14} />
+                          <span>Tambah</span>
+                        </button>
                       </div>
                     </div>
                   </motion.article>
                 );
               })}
             </motion.div>
-            <div className="bauhaus-center">
-              <motion.button type="button" className="bauhaus-button outline" onClick={() => goCatalogue(null)} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+            <div className="cyber-center">
+              <motion.button type="button" className="cyber-button outline" onClick={() => goCatalogue(null)} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
                 <EditableText
                   as="span"
                   value={texts.catalogue.viewAllLabel || INITIAL_TEXT.catalogue.viewAllLabel || "Lihat semua katalog"}
@@ -1134,7 +1202,7 @@ export function StorefrontBauhausTemplate({
               </motion.button>
             </div>
           </motion.section>
-        </BauhausSection>
+        </CyberSection>
       ) : null}
 
       {footer}

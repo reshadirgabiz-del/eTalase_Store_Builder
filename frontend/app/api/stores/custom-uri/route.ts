@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const alias = normalizeAlias(String(body.alias ?? ""));
     const storeKey = String(body.storeId ?? "");
-    const templateId = typeof body.templateId === "string" ? body.templateId : "storefront-classic";
+    const templateId = typeof body.templateId === "string" ? body.templateId : "classic";
     const theme = isPlainObject(body.theme) ? body.theme : {};
     const texts = isPlainObject(body.texts) ? body.texts : {};
     const hidden = isPlainObject(body.hidden) ? body.hidden : {};

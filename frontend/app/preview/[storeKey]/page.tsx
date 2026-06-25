@@ -147,7 +147,7 @@ export default function PublishedPreviewPage({
   return (
     <div className="published-shell" style={themeStyle}>
       <StorefrontPreview
-        templateId={snapshot.templateId ?? "storefront-classic"}
+        templateId={snapshot.templateId ?? "classic"}
         storeName={storeName}
         logoUrl={logoUrl}
         storeId={storeInfo?.storeId || snapshot.storeId || decodedKey}

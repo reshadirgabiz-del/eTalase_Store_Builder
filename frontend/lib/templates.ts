@@ -1,14 +1,16 @@
 export type TemplateId =
-  | "storefront-classic"
-  | "storefront-modern"
-  | "storefront-pastel"
-  | "storefront-pastel-bauhaus"
-  | "storefront-bauhaus"
-  | "storefront-mosaic"
-  | "storefront-noir"
-  | "storefront-cyber"
-  | "storefront-editorial"
-  | "storefront-brutalist"
+  | "classic"
+  | "modern"
+  | "pastel"
+  | "pastel-bauhaus"
+  | "bauhaus"
+  | "mosaic"
+  | "noir"
+  | "cyber"
+  | "editorial"
+  | "brutalist"
+  | "glass"
+  | "artisan"
   | "custom-upload";
 
 export type TemplateLayout = "full-home" | "catalogue-first";
@@ -32,107 +34,141 @@ export type BuilderTemplate = {
   sdkReference: string;
   capabilities: string[];
   layout?: TemplateLayout;
+  defaultColorSchemeId?: string;
 };
 
 export const templates: BuilderTemplate[] = [
   {
-    id: "storefront-classic",
-    name: "Storefront Classic",
+    id: "classic",
+    name: "Classic",
     source: "../Storepage test/my-app",
     status: "ready",
     layout: "full-home",
+    defaultColorSchemeId: "teal-gold",
     description:
-      "Template storefront Next.js yang sudah diuji dengan alur SDK eTalase lokal. Builder dapat mengubah warna dan teks utama halaman sebelum deploy.",
+      "Template Next.js yang sudah diuji dengan alur SDK eTalase lokal. Builder dapat mengubah warna dan teks utama halaman sebelum deploy.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero katalog", "Bagian kategori", "Sidebar keranjang", "Halaman katalog"],
   },
   {
-    id: "storefront-modern",
-    name: "Storefront Modern",
+    id: "modern",
+    name: "Modern",
     source: "../Storepage test/template-2",
     status: "ready",
     layout: "full-home",
+    defaultColorSchemeId: "bauhaus-cobalt",
     description:
-      "Template storefront modern-minimalis dengan inspirasi Bauhaus, geometri tegas, tata letak grid rapi, animasi halus, dan fokus katalog e-commerce.",
+      "Template modern-minimalis dengan inspirasi Bauhaus, geometri tegas, tata letak grid rapi, animasi halus, dan fokus katalog e-commerce.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero Bauhaus modern", "Grid kategori blok", "Katalog produk animatif", "Sidebar keranjang"],
   },
   {
-    id: "storefront-pastel",
-    name: "Storefront Pastel",
+    id: "pastel",
+    name: "Pastel",
     source: "../Storepage test/template-3",
     status: "ready",
     layout: "catalogue-first",
+    defaultColorSchemeId: "rose-cream",
     description:
-      "Template storefront pastel dengan kartu kategori besar, intro produk bergaya fan gallery, dan katalog visual yang ringan untuk toko lifestyle.",
+      "Template pastel dengan kartu kategori besar, intro produk bergaya fan gallery, dan katalog visual yang ringan untuk toko lifestyle.",
     sdkReference: "../eTalase Module",
     capabilities: ["Fan hero produk", "Kartu kategori pastel", "Katalog kartu lembut", "Halaman detail produk"],
   },
   {
-    id: "storefront-pastel-bauhaus",
-    name: "Storefront Pastel Bauhaus",
+    id: "pastel-bauhaus",
+    name: "Pastel Bauhaus",
     source: "../Storepage test/template-5",
     status: "ready",
     layout: "catalogue-first",
+    defaultColorSchemeId: "bauhaus-primary",
     description:
       "Varian dari template pastel dengan estetika Bauhaus: warna primer berani, bentuk geometris tegas, garis hairline, dan kartu kategori berwarna blok. Layout tetap mengikuti template pastel.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero opening Bauhaus", "Kartu kategori warna blok", "Katalog kartu kotak", "Detail produk geometris"],
   },
   {
-    id: "storefront-mosaic",
-    name: "Storefront Mosaic Market",
-    source: "frontend/app/components/storefront-pastel-template.tsx",
+    id: "mosaic",
+    name: "Mosaic Market",
+    source: "frontend/app/components/pastel-template.tsx",
     status: "ready",
     layout: "catalogue-first",
+    defaultColorSchemeId: "ocean-sunset",
     description:
       "Template bergaya pasar kreatif dengan mosaik produk rapat, header seperti label toko, warna aksen berlapis, dan kartu katalog yang terasa seperti ubin display butik.",
     sdkReference: "../eTalase Module",
     capabilities: ["Mosaik produk", "Header label toko", "Kategori ubin besar", "Katalog editorial padat"],
   },
   {
-    id: "storefront-noir",
-    name: "Storefront Noir Gallery",
-    source: "frontend/app/components/storefront-pastel-template.tsx",
+    id: "noir",
+    name: "Noir Gallery",
+    source: "frontend/app/components/pastel-template.tsx",
     status: "ready",
     layout: "catalogue-first",
+    defaultColorSchemeId: "midnight-amber",
     description:
       "Template galeri gelap dengan presentasi produk dramatis, kartu glassy, aksen tipis, dan suasana premium untuk brand fashion, fragrance, aksesori, atau koleksi terbatas.",
     sdkReference: "../eTalase Module",
     capabilities: ["Galeri gelap", "Produk spotlight", "Kartu glassy", "Detail premium"],
   },
   {
-    id: "storefront-cyber",
-    name: "Storefront Cyber Glitch",
+    id: "cyber",
+    name: "Cyber Glitch",
     source: "../Storepage test/template-4",
     status: "ready",
     layout: "full-home",
+    defaultColorSchemeId: "cyber-bone",
     description:
       "Template minimalis cyberpunk dengan kanvas off-white, sentuhan neon magenta dan cyan, efek RGB-shift saat hover, dan judul bergaya glitch untuk toko bernuansa edgy dan futuristik.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero glitch chromatic", "Kartu kategori neon", "Katalog kartu hairline", "Sidebar keranjang"],
   },
   {
-    id: "storefront-editorial",
-    name: "Storefront Editorial",
-    source: "frontend/app/components/storefront-editorial-template.tsx",
+    id: "editorial",
+    name: "Editorial",
+    source: "frontend/app/components/editorial-template.tsx",
     status: "ready",
     layout: "full-home",
+    defaultColorSchemeId: "editorial-ivory",
     description:
       "Template bergaya majalah dengan tipografi serif besar, tata letak asimetris, dan nomor edisi. Cocok untuk toko butik dengan narasi visual yang kuat dan presentasi produk seperti spread editorial.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero editorial spread", "Kategori bernomor", "Katalog dua kolom asimetris", "Detail produk magazine"],
   },
   {
-    id: "storefront-brutalist",
-    name: "Storefront Neon Brutalist",
-    source: "frontend/app/components/storefront-brutalist-template.tsx",
+    id: "brutalist",
+    name: "Neon Brutalist",
+    source: "frontend/app/components/brutalist-template.tsx",
     status: "ready",
     layout: "full-home",
+    defaultColorSchemeId: "brutalist-acid",
     description:
       "Template brutalist dengan tipografi sans super besar, blok warna mentah, bayangan keras, dan sorotan neon. Untuk toko yang ingin tampil berani, ekspresif, dan tidak takut menonjol.",
     sdkReference: "../eTalase Module",
     capabilities: ["Hero blok warna besar", "Kategori sticker neon", "Katalog kartu shadow keras", "Detail produk kontras tinggi"],
+  },
+  {
+    id: "glass",
+    name: "Aurora Glass",
+    source: "frontend/app/components/glass-template.tsx",
+    status: "ready",
+    layout: "full-home",
+    defaultColorSchemeId: "aurora-glass",
+    description:
+      "Glassmorphism penuh dengan latar gradient aurora, kartu produk frosted, blur halus, dan tepi bersinar tipis. Cocok untuk brand teknologi, beauty, atau premium digital lifestyle yang ingin terasa ringan dan modern.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero gradient aurora", "Kartu kategori glassy", "Katalog frosted card", "Detail produk floating glass"],
+  },
+  {
+    id: "artisan",
+    name: "Artisan Atelier",
+    source: "frontend/app/components/artisan-template.tsx",
+    status: "ready",
+    layout: "catalogue-first",
+    defaultColorSchemeId: "artisan-paper",
+    description:
+      "Estetika handmade dan craft: tekstur kertas, palet bumi hangat, stempel nomor edisi, dan kartu yang terasa seperti kartu pos butik. Cocok untuk produk artisanal, ceramic, kopi spesial, atau koleksi terbatas.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero kartu pos", "Stempel kategori", "Katalog edisi terbatas", "Detail produk tag jahit"],
   },
   {
     id: "custom-upload",
@@ -407,6 +443,34 @@ export const colorSchemes: ColorScheme[] = [
     muted: "#4b4b4b",
   },
   {
+    id: "aurora-glass",
+    name: "Aurora Glass",
+    fontBody: "var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontHeading: "var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    brand: "#6366f1",
+    brandStrong: "#4338ca",
+    buttonText: "#ffffff",
+    accent: "#22d3ee",
+    pageBg: "#eef2ff",
+    surface: "#ffffff",
+    ink: "#1e1b4b",
+    muted: "#64748b",
+  },
+  {
+    id: "artisan-paper",
+    name: "Artisan Paper",
+    fontBody: "var(--font-lora), Georgia, serif",
+    fontHeading: "var(--font-fraunces), Georgia, serif",
+    brand: "#8a5a3b",
+    brandStrong: "#5e3a22",
+    buttonText: "#fbf6ec",
+    accent: "#c97b3f",
+    pageBg: "#f5ecdc",
+    surface: "#fbf6ec",
+    ink: "#2e1f12",
+    muted: "#7a604b",
+  },
+  {
     id: "cyber-night",
     name: "Cyber Night",
     fontBody: "var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
@@ -421,6 +485,16 @@ export const colorSchemes: ColorScheme[] = [
     muted: "#9a9aa8",
   },
 ];
+
+export function getTemplateDefaultScheme(templateId: TemplateId | undefined): ColorScheme {
+  const template = templates.find((item) => item.id === templateId);
+  const target = template?.defaultColorSchemeId;
+  if (target) {
+    const scheme = colorSchemes.find((preset) => preset.id === target);
+    if (scheme) return scheme;
+  }
+  return colorSchemes[0];
+}
 
 export const FONT_OPTIONS = [
   {
