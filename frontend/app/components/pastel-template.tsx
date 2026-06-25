@@ -51,7 +51,7 @@ type Props = {
   page: PreviewPage;
   onNavigate: (page: PreviewPage) => void;
   badgeEditable?: boolean;
-  variant?: "default" | "bauhaus" | "mosaic" | "noir";
+  variant?: "default" | "bauhaus" | "mosaic";
 };
 
 function stockLimit(product: Product) {
@@ -303,9 +303,7 @@ export function PastelTemplate({
       ? "is-bauhaus"
       : variant === "mosaic"
         ? "is-mosaic"
-        : variant === "noir"
-          ? "is-noir"
-          : "";
+        : "";
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -843,11 +841,11 @@ function ProductGrid({
                     if (disabled) return;
                     onAddToCart(product);
                   }}
-                  aria-label={disabled ? soldOutLabel : addLabel}
+                  aria-label={disabled ? soldOutLabel : "Tambah"}
                 >
                   {disabled ? soldOutLabel : (
                     <>
-                      <ShoppingBag size={14} /> <span>{addLabel}</span>
+                      <ShoppingBag size={14} /> <span>Tambah</span>
                     </>
                   )}
                 </button>

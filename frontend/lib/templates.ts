@@ -5,7 +5,6 @@ export type TemplateId =
   | "pastel-bauhaus"
   | "bauhaus"
   | "mosaic"
-  | "noir"
   | "cyber"
   | "editorial"
   | "brutalist"
@@ -97,18 +96,6 @@ export const templates: BuilderTemplate[] = [
       "Template bergaya pasar kreatif dengan mosaik produk rapat, header seperti label toko, warna aksen berlapis, dan kartu katalog yang terasa seperti ubin display butik.",
     sdkReference: "../eTalase Module",
     capabilities: ["Mosaik produk", "Header label toko", "Kategori ubin besar", "Katalog editorial padat"],
-  },
-  {
-    id: "noir",
-    name: "Noir Gallery",
-    source: "frontend/app/components/pastel-template.tsx",
-    status: "ready",
-    layout: "catalogue-first",
-    defaultColorSchemeId: "midnight-amber",
-    description:
-      "Template galeri gelap dengan presentasi produk dramatis, kartu glassy, aksen tipis, dan suasana premium untuk brand fashion, fragrance, aksesori, atau koleksi terbatas.",
-    sdkReference: "../eTalase Module",
-    capabilities: ["Galeri gelap", "Produk spotlight", "Kartu glassy", "Detail premium"],
   },
   {
     id: "cyber",

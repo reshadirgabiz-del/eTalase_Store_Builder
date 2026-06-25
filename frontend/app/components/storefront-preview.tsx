@@ -886,7 +886,6 @@ export function StorefrontPreview({
       "pastel": "pastel-store",
       "pastel-bauhaus": "pastel-store is-bauhaus",
       "mosaic": "pastel-store is-mosaic",
-      "noir": "pastel-store is-noir",
       "cyber": "cyber-page",
       "editorial": "editorial-page",
       "brutalist": "brutal-page",
@@ -1095,8 +1094,7 @@ export function StorefrontPreview({
   if (
     templateId === "pastel" ||
     templateId === "pastel-bauhaus" ||
-    templateId === "mosaic" ||
-    templateId === "noir"
+    templateId === "mosaic"
   ) {
     return (
       <PastelTemplate
@@ -1124,9 +1122,7 @@ export function StorefrontPreview({
             ? "bauhaus"
             : templateId === "mosaic"
               ? "mosaic"
-              : templateId === "noir"
-                ? "noir"
-                : "default"
+              : "default"
         }
       />
     );

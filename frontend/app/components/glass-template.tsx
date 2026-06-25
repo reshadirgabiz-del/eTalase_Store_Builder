@@ -591,7 +591,6 @@ function HomeView({
                 onOpen={() => onOpenProduct(p.id)}
                 onAdd={() => onAddToCart(p)}
                 name={productText(p).name}
-                addLabel={texts.catalogue.addToCartLabel || "Tambah"}
               />
             ))}
           </div>
@@ -608,14 +607,12 @@ function ProductCard({
   onOpen,
   onAdd,
   name,
-  addLabel,
 }: {
   product: Product;
   currency: string;
   onOpen: () => void;
   onAdd: () => void;
   name: string;
-  addLabel: string;
 }) {
   const image = productThumbnail(product) || FALLBACK_IMAGE;
   const price = effectivePrice(product);
@@ -638,9 +635,11 @@ function ProductCard({
               e.stopPropagation();
               onAdd();
             }}
-            style={{ background: "var(--c-brand)", color: "var(--c-button-text)", border: "none", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+            aria-label="Tambah"
+            style={{ background: "var(--c-brand)", color: "var(--c-button-text)", border: "none", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
           >
-            {addLabel}
+            <ShoppingBag size={12} />
+            Tambah
           </button>
         </div>
       </div>
@@ -731,7 +730,6 @@ function CatalogueView({
             onOpen={() => onOpenProduct(p.id)}
             onAdd={() => onAddToCart(p)}
             name={productText(p).name}
-            addLabel={texts.catalogue.addToCartLabel || "Tambah"}
           />
         ))}
       </div>

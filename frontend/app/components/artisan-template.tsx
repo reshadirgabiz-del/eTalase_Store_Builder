@@ -660,7 +660,6 @@ function HomeView({
                 onOpen={() => onOpenProduct(p.id)}
                 onAdd={() => onAddToCart(p)}
                 name={productText(p).name}
-                addLabel={texts.catalogue.addToCartLabel || "Tambah"}
                 index={idx}
               />
             ))}
@@ -678,7 +677,6 @@ function ProductCard({
   onOpen,
   onAdd,
   name,
-  addLabel,
   index,
 }: {
   product: Product;
@@ -686,7 +684,6 @@ function ProductCard({
   onOpen: () => void;
   onAdd: () => void;
   name: string;
-  addLabel: string;
   index: number;
 }) {
   const image = productThumbnail(product) || FALLBACK_IMAGE;
@@ -722,9 +719,11 @@ function ProductCard({
             e.stopPropagation();
             onAdd();
           }}
-          style={{ marginTop: 10, width: "100%", background: "var(--c-ink)", color: "var(--c-bg)", border: "none", borderRadius: 4, padding: "8px 12px", fontFamily: "var(--font-heading)", fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer" }}
+          aria-label="Tambah"
+          style={{ marginTop: 10, width: "100%", background: "var(--c-ink)", color: "var(--c-bg)", border: "none", borderRadius: 4, padding: "8px 12px", fontFamily: "var(--font-heading)", fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
-          {addLabel}
+          <ShoppingBag size={12} />
+          Tambah
         </button>
       </div>
     </motion.article>
@@ -821,7 +820,6 @@ function CatalogueView({
             onOpen={() => onOpenProduct(p.id)}
             onAdd={() => onAddToCart(p)}
             name={productText(p).name}
-            addLabel={texts.catalogue.addToCartLabel || "Tambah"}
             index={idx}
           />
         ))}

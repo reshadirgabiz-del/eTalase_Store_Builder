@@ -851,10 +851,10 @@ function ProductGrid({
                       if (disabled) return;
                       onAddToCart(product);
                     }}
-                    aria-label={disabled ? soldOutLabel : addLabel}
+                    aria-label={disabled ? soldOutLabel : "Tambah"}
                   >
-                    {disabled ? soldOutLabel : addLabel}
-                    {disabled ? null : <ArrowUpRight size={12} />}
+                    {disabled ? null : <ShoppingBag size={12} />}
+                    {disabled ? soldOutLabel : "Tambah"}
                   </button>
                 </div>
               </div>
