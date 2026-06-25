@@ -766,6 +766,11 @@ export function BuilderWorkspace() {
                     <Text size="xs" c="dimmed" mt={4}>
                       Layout dan teks dikunci kecuali badge hero. Tema dan font tetap dapat diedit.
                     </Text>
+                    {template.id === "storefront-brutalist" ? (
+                      <Text size="xs" c="dimmed" mt={4}>
+                        Tip: marquee berjalan di hero dapat diklik langsung di preview untuk mengubah teksnya.
+                      </Text>
+                    ) : null}
                   </div>
                   <Tooltip label="Ciutkan">
                     <ActionIcon variant="subtle" onClick={() => setPanelOpen(false)} aria-label="Ciutkan panel">

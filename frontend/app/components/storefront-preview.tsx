@@ -136,6 +136,7 @@ export const INITIAL_TEXT: TextConfig = {
     navHome: "Beranda",
     navCatalogue: "Katalog",
     cartLabel: "Keranjang",
+    banner: "★ Drop Baru ★ Kirim Cepat ★ Stok Terbatas ★ Ready ★",
   },
   categories: {
     title: "Belanja berdasarkan kategori",

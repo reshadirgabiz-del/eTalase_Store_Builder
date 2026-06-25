@@ -83,13 +83,19 @@ function pad(n: number) {
   return n.toString().padStart(2, "0");
 }
 
-function MarqueeStrip({ children }: { children: React.ReactNode }) {
+function MarqueeStrip({
+  children,
+  paused = false,
+}: {
+  children: React.ReactNode;
+  paused?: boolean;
+}) {
   return (
-    <div className="brutal-marquee" aria-hidden="true">
+    <div className="brutal-marquee" aria-hidden={paused ? undefined : "true"}>
       <motion.div
         className="brutal-marquee-track"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ ease: "linear", duration: 22, repeat: Infinity }}
+        animate={paused ? { x: "0%" } : { x: ["0%", "-50%"] }}
+        transition={paused ? { duration: 0 } : { ease: "linear", duration: 22, repeat: Infinity }}
       >
         {Array.from({ length: 2 }).map((_, copy) => (
           <span className="brutal-marquee-row" key={copy}>
@@ -682,10 +688,15 @@ export function StorefrontBrutalistTemplate({
                 <span className="brutal-hero-sticker tone-cyan bottom">{products.length} ITEM</span>
               </motion.div>
             </div>
-            <MarqueeStrip>
+            <MarqueeStrip paused={canEditText}>
               {Array.from({ length: 4 }).map((_, i) => (
                 <span key={i} className="brutal-marquee-item">
-                  ★ {(texts.hero.eyebrow || "Drop Baru").toUpperCase()} ★ KIRIM CEPAT ★ STOK TERBATAS ★ READY ★
+                  <EditableText
+                    as="span"
+                    value={texts.hero.banner || INITIAL_TEXT.hero.banner || ""}
+                    editable={canEditText}
+                    onChange={(value) => onUpdateText("hero", "banner", value)}
+                  />
                 </span>
               ))}
             </MarqueeStrip>
