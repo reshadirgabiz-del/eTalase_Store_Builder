@@ -36,15 +36,17 @@ import templatePastelShot from "../../assets/templateScreenshots/storefront-past
 import templateCyberShot from "../../assets/templateScreenshots/storefront-cyber-glitch.png";
 import templatePastelBauhausShot from "../../assets/templateScreenshots/storefront-pastel-bauhaus.png";
 
+import templateEditorialShot from "../../assets/templateScreenshots/storefront-editorial.png";
+import templateNeonBrutaliseShot from "../../assets/templateScreenshots/storefront-neon-brutalist.png";
+
 const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
   "storefront-classic": templateClassicShot,
   "storefront-modern": templateModernShot,
-  "storefront-bauhaus": templateModernShot,
   "storefront-pastel": templatePastelShot,
   "storefront-pastel-bauhaus": templatePastelBauhausShot,
   "storefront-cyber": templateCyberShot,
-  "storefront-editorial": templateClassicShot,
-  "storefront-brutalist": templateModernShot,
+  "storefront-editorial": templateEditorialShot,
+  "storefront-brutalist": templateNeonBrutaliseShot,
 };
 import { createEtalaseClient } from "etalase-module";
 import {
