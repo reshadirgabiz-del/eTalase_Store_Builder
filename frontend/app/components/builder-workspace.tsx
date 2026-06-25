@@ -42,6 +42,7 @@ import templateNeonBrutaliseShot from "../../assets/templateScreenshots/storefro
 const TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
   "storefront-classic": templateClassicShot,
   "storefront-modern": templateModernShot,
+  "storefront-bauhaus": templateModernShot,
   "storefront-pastel": templatePastelShot,
   "storefront-pastel-bauhaus": templatePastelBauhausShot,
   "storefront-cyber": templateCyberShot,

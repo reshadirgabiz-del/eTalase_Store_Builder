@@ -56,6 +56,17 @@ export const templates: BuilderTemplate[] = [
     capabilities: ["Hero Bauhaus modern", "Grid kategori blok", "Katalog produk animatif", "Sidebar keranjang"],
   },
   {
+    id: "storefront-bauhaus",
+    name: "Storefront Primary Bauhaus",
+    source: "frontend/app/components/storefront-bauhaus-template.tsx",
+    status: "ready",
+    layout: "full-home",
+    description:
+      "Template storefront dengan bahasa visual Bauhaus yang lebih tegas: komposisi geometris, aksen primer, navigasi ringkas, dan katalog grid yang terasa seperti poster produk interaktif.",
+    sdkReference: "../eTalase Module",
+    capabilities: ["Hero geometri primer", "Navigasi poster", "Grid kategori modular", "Katalog motion"],
+  },
+  {
     id: "storefront-pastel",
     name: "Storefront Pastel",
     source: "../Storepage test/template-3",
