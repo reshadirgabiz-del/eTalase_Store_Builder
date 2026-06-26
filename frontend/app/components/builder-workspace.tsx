@@ -156,6 +156,8 @@ const HOWTO_STEPS: { title: string; body: string }[] = [
 const DEMO_STORE_ID = "583e6139-c4cb-4037-beb1-0f787867ff90";
 const DEMO_PUBLIC_KEY = "etalase_pk_live_ENvGGo5xJ9KlBgdraJuSf_ThMoNwndBke6R_5ZVNv9I";
 const TEMPLATE_LOCKED = true;
+const CUSTOM_UPLOAD_MAX_BYTES = 2 * 1024 * 1024;
+const CUSTOM_UPLOAD_EMAIL = "info@mail.e-talase.com";
 const STOREFRONT_BASE_URL = (process.env.NEXT_PUBLIC_STOREFRONT_BASE_URL ?? "https://store.e-talase.com").replace(/\/+$/, "");
 const ETALASE_API_URL = process.env.NEXT_PUBLIC_ETALASE_API_URL;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -290,6 +292,19 @@ export function BuilderWorkspace() {
   const [aliasMessage, setAliasMessage] = useState("");
   const [publishError, setPublishError] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [existingPublication, setExistingPublication] = useState<{
+    alias: string;
+    templateId: TemplateId;
+    theme: ColorScheme | null;
+    texts: Partial<TextConfig> | null;
+    hidden: Partial<HiddenConfig> | null;
+    config: { productTextOverrides?: ProductTextOverrides; heroImageOverride?: string | null } | null;
+    customStoreUri: string | null;
+    publishedAt: string | null;
+  } | null>(null);
+  const [existingModalOpen, setExistingModalOpen] = useState(false);
+  const [oversizedUploadOpen, setOversizedUploadOpen] = useState(false);
+  const [oversizedFileName, setOversizedFileName] = useState<string | null>(null);
 
   const liveProducts = products.length > 0 ? products : fallbackProducts;
   const storeName = settings?.storeName || storeInfo?.storeName || "Storefront";
@@ -426,11 +441,63 @@ export function BuilderWorkspace() {
       setDraftStoreId(nextStoreId);
       setDraftSecretKey("");
       setKeyModalOpen(false);
+
+      try {
+        const params = new URLSearchParams({ byStoreId: nextStoreId });
+        const lookup = await fetch(`/api/stores/custom-uri?${params.toString()}`);
+        const lookupJson = await lookup.json().catch(() => ({}));
+        if (lookup.ok && lookupJson?.exists) {
+          setExistingPublication({
+            alias: lookupJson.alias,
+            templateId: (lookupJson.templateId ?? "classic") as TemplateId,
+            theme: (lookupJson.theme ?? null) as ColorScheme | null,
+            texts: (lookupJson.texts ?? null) as Partial<TextConfig> | null,
+            hidden: (lookupJson.hidden ?? null) as Partial<HiddenConfig> | null,
+            config: (lookupJson.config ?? null) as
+              | { productTextOverrides?: ProductTextOverrides; heroImageOverride?: string | null }
+              | null,
+            customStoreUri: lookupJson.customStoreUri ?? null,
+            publishedAt: lookupJson.publishedAt ?? null,
+          });
+          setExistingModalOpen(true);
+        }
+      } catch {
+        // non-blocking; user can still pick a template
+      }
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : "Tidak dapat login.");
     } finally {
       setIsAuthing(false);
     }
+  }
+
+  function loadExistingPublication() {
+    if (!existingPublication) return;
+    const next = existingPublication;
+    setSelectedTemplate(next.templateId);
+    if (next.theme) {
+      setScheme(next.theme);
+    } else {
+      setScheme(getTemplateDefaultScheme(next.templateId));
+    }
+    setTexts({ ...INITIAL_TEXT, ...(next.texts ?? {}) } as TextConfig);
+    setHidden({ ...EMPTY_HIDDEN, ...(next.hidden ?? {}) } as HiddenConfig);
+    setProductTextOverrides(next.config?.productTextOverrides ?? {});
+    setHeroImageOverride(next.config?.heroImageOverride ?? null);
+    setCustomStoreName(next.alias);
+    if (next.publishedAt) {
+      setPublishedAt(new Date(next.publishedAt).toLocaleString());
+    }
+    if (next.customStoreUri) {
+      setPublishedUrl(next.customStoreUri);
+    }
+    setExistingModalOpen(false);
+    setPreviewMode(false);
+    setScreen("editor");
+  }
+
+  function startBlankBuild() {
+    setExistingModalOpen(false);
   }
 
   function selectSection(section: SectionId) {
@@ -651,6 +718,89 @@ export function BuilderWorkspace() {
       />
 
       <Modal
+        opened={existingModalOpen}
+        onClose={startBlankBuild}
+        centered
+        size="md"
+        radius="lg"
+        title={
+          <Group gap="sm" wrap="nowrap" align="center">
+            <Sparkles size={18} color="var(--mantine-color-teal-7)" />
+            <span>Anda sudah memiliki storefront</span>
+          </Group>
+        }
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            Toko ini sudah memiliki storefront aktif
+            {existingPublication?.customStoreUri ? (
+              <>
+                {" "}di{" "}
+                <code>{existingPublication.customStoreUri}</code>
+              </>
+            ) : null}
+            . Anda dapat melanjutkan edit versi yang ada atau memulai dari template baru.
+          </Text>
+          {existingPublication?.publishedAt ? (
+            <Text size="xs" c="dimmed">
+              Terakhir dipublish: {new Date(existingPublication.publishedAt).toLocaleString()}
+            </Text>
+          ) : null}
+          <Group justify="flex-end" gap="sm">
+            <Button variant="default" onClick={startBlankBuild}>
+              Buat baru dari awal
+            </Button>
+            <Button leftSection={<Eye size={14} />} onClick={loadExistingPublication}>
+              Edit storefront yang ada
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
+        opened={oversizedUploadOpen}
+        onClose={() => setOversizedUploadOpen(false)}
+        centered
+        size="md"
+        radius="lg"
+        title={
+          <Group gap="sm" wrap="nowrap" align="center">
+            <AlertTriangle size={18} color="var(--mantine-color-orange-6)" />
+            <span>File terlalu besar</span>
+          </Group>
+        }
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            Unggahan kustom dibatasi maksimum <strong>2 MB</strong>
+            {oversizedFileName ? (
+              <>
+                . File <code>{oversizedFileName}</code> melampaui batas tersebut
+              </>
+            ) : null}
+            . Untuk template lebih besar, kirim bundle Anda melalui email beserta detail toko, dan tim kami akan
+            membantu proses review.
+          </Text>
+          <Group justify="flex-end" gap="sm">
+            <Button variant="default" onClick={() => setOversizedUploadOpen(false)}>
+              Tutup
+            </Button>
+            <Button
+              component="a"
+              href={`mailto:${CUSTOM_UPLOAD_EMAIL}?subject=${encodeURIComponent(
+                "Unggahan template kustom storefront",
+              )}&body=${encodeURIComponent(
+                `Store ID: ${storeId || "-"}\nNama file: ${oversizedFileName ?? "-"}\n\nMohon bantuannya untuk mengunggah template kustom kami.`,
+              )}`}
+              leftSection={<Send size={14} />}
+            >
+              Kirim email ke {CUSTOM_UPLOAD_EMAIL}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
         opened={howToModalOpen}
         onClose={dismissHowToModal}
         centered
@@ -713,6 +863,12 @@ export function BuilderWorkspace() {
           onPreview={setPreviewTemplate}
           onSelect={selectTemplate}
           onCustomZip={(file) => {
+            if (file && file.size > CUSTOM_UPLOAD_MAX_BYTES) {
+              setOversizedFileName(file.name);
+              setOversizedUploadOpen(true);
+              setCustomZip(null);
+              return;
+            }
             setCustomZip(file);
             if (file) {
               setCustomUploadModalOpen(true);
@@ -1467,8 +1623,8 @@ function TemplateSelection({
                 <FileArchive size={22} />
               </Group>
               <Text size="sm" c="dimmed">
-                Unggah zip aplikasi JavaScript. Ini diperlakukan sebagai template non-standar dan memicu review admin
-                sebelum deploy.
+                Unggah zip aplikasi JavaScript (maks. 2 MB). Ini diperlakukan sebagai template non-standar dan memicu
+                review admin sebelum deploy. Untuk bundle lebih besar, kirim via email ke {CUSTOM_UPLOAD_EMAIL}.
               </Text>
             </div>
             <Stack>

@@ -46,9 +46,46 @@ async function lookupOwnerPublicKey(storeId: string) {
   return data?.public_store_key ?? null;
 }
 
+async function findPublicationByStoreId(storeId: string) {
+  const { data, error } = await getSupabaseAdmin()
+    .from("storefront_publications")
+    .select("store_id, public_store_key, alias, custom_store_uri, template_id, theme, texts, hidden, config, published_at")
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const byStoreId = searchParams.get("byStoreId");
+
+    if (byStoreId) {
+      const resolvedId = await resolveOwnerStoreId(byStoreId);
+      if (!resolvedId) {
+        return Response.json({ exists: false });
+      }
+      const existing = await findPublicationByStoreId(resolvedId);
+      if (!existing) {
+        return Response.json({ exists: false });
+      }
+      return Response.json({
+        exists: true,
+        alias: existing.alias,
+        customStoreUri: existing.custom_store_uri,
+        storeId: existing.store_id,
+        publicStoreKey: existing.public_store_key,
+        templateId: existing.template_id,
+        theme: existing.theme,
+        texts: existing.texts,
+        hidden: existing.hidden,
+        config: existing.config,
+        publishedAt: existing.published_at,
+      });
+    }
+
     const alias = normalizeAlias(searchParams.get("alias") ?? "");
     const callerStoreKey = searchParams.get("storeId") ?? "";
 
