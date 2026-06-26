@@ -9,6 +9,13 @@ import templateModernShot from "../../assets/templateScreenshots/modern.png";
 import templatePastelShot from "../../assets/templateScreenshots/pastel.png";
 import templateCyberShot from "../../assets/templateScreenshots/cyber.png";
 import { templates as realTemplates, type TemplateId } from "@/lib/templates";
+import { StorefrontMobilePreview } from "@/app/components/builder-workspace";
+
+type ExistingPublication = {
+  alias: string;
+  customStoreUri: string | null;
+  publishedAt: string | null;
+};
 
 const REAL_TEMPLATE_SCREENSHOTS: Partial<Record<TemplateId, { src: string }>> = {
   "classic": templateClassicShot,
@@ -474,7 +481,7 @@ function RealTemplateCarousel({ onPreview }: { onPreview: () => void }) {
   );
 }
 
-function LandingHero({ onLogin, store, resetSignal = 0 }: { onLogin: (name: string) => void; store: string | null; resetSignal?: number }) {
+function LandingHero({ onLogin, store, resetSignal = 0 }: { onLogin: (name: string, existing: ExistingPublication | null) => void; store: string | null; resetSignal?: number }) {
   const [storeId, setStoreId] = useState("");
   const [pubKey, setPubKey] = useState("");
   const [loading, setLoading] = useState(false);
@@ -522,7 +529,24 @@ function LandingHero({ onLogin, store, resetSignal = 0 }: { onLogin: (name: stri
       const pretty = nextStoreId.replace(/[-_]+/g, " ").replace(/\b\w/g, (m: string) => m.toUpperCase());
       const storeName = pretty || "Toko Kamu";
       persistBuilderCredentials(nextStoreId, nextPublicKey, storeName);
-      onLogin(storeName);
+
+      let existing: ExistingPublication | null = null;
+      try {
+        const params = new URLSearchParams({ byStoreId: nextStoreId });
+        const lookup = await fetch(`/api/stores/custom-uri?${params.toString()}`);
+        const lookupJson = await lookup.json().catch(() => ({}));
+        if (lookup.ok && lookupJson?.exists) {
+          existing = {
+            alias: lookupJson.alias,
+            customStoreUri: lookupJson.customStoreUri ?? null,
+            publishedAt: lookupJson.publishedAt ?? null,
+          };
+        }
+      } catch {
+        // non-blocking
+      }
+
+      onLogin(storeName, existing);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tidak dapat memverifikasi kredensial.");
     } finally {
@@ -622,8 +646,10 @@ function BuilderFooter() {
 }
 
 export function BuilderLandingPage() {
+  const router = useRouter();
   const [store, setStore] = useState<string | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
+  const [existing, setExisting] = useState<ExistingPublication | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -641,8 +667,7 @@ export function BuilderLandingPage() {
     }
   }, []);
 
-  const handleLogin = (name: string) => {
-    setStore(name);
+  const scrollToTemplates = () => {
     window.setTimeout(() => {
       const el = sectionRef.current;
       if (!el) return;
@@ -651,14 +676,34 @@ export function BuilderLandingPage() {
     }, 250);
   };
 
+  const handleLogin = (name: string, existingPublication: ExistingPublication | null) => {
+    setStore(name);
+    if (existingPublication) {
+      setExisting(existingPublication);
+    } else {
+      scrollToTemplates();
+    }
+  };
+
   const handleChangeStore = () => {
     [STORE_ID_STORAGE_KEY, PUBLIC_STORE_KEY_STORAGE_KEY, STORE_NAME_STORAGE_KEY].forEach((key) => {
       window.localStorage.removeItem(key);
       setBuilderCookie(key, "");
     });
     setStore(null);
+    setExisting(null);
     setResetSignal((value) => value + 1);
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  };
+
+  const dismissExisting = () => {
+    setExisting(null);
+    scrollToTemplates();
+  };
+
+  const goEditExisting = () => {
+    setExisting(null);
+    router.push("/templates?loadExisting=1");
   };
 
   return (
@@ -668,6 +713,174 @@ export function BuilderLandingPage() {
       <LandingHero onLogin={handleLogin} store={store} resetSignal={resetSignal} />
       <TemplateHero unlocked={!!store} store={store} sectionRef={sectionRef} />
       <BuilderFooter />
+      {existing ? (
+        <ExistingStorefrontModal
+          existing={existing}
+          onClose={dismissExisting}
+          onEdit={goEditExisting}
+          onCreateNew={dismissExisting}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function ExistingStorefrontModal({
+  existing,
+  onClose,
+  onEdit,
+  onCreateNew,
+}: {
+  existing: ExistingPublication;
+  onClose: () => void;
+  onEdit: () => void;
+  onCreateNew: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(28,26,20,0.55)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        zIndex: 80,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 16px",
+        overflowY: "auto",
+        animation: "cat-fade 0.18s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 720,
+          background: "var(--hi-card)",
+          border: "1px solid var(--hi-line)",
+          borderRadius: 22,
+          padding: "26px 26px 22px",
+          boxShadow: "0 40px 90px -36px rgba(28,26,20,0.55)",
+          animation: "cat-modal-in 0.28s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--hi-mono)",
+                fontSize: 9.5,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--c-sage)",
+                marginBottom: 8,
+              }}
+            >
+              Storefront aktif terdeteksi
+            </div>
+            <h3 style={{ margin: 0, fontFamily: "var(--hi-serif)", fontSize: 24, color: "var(--hi-ink)", lineHeight: 1.1 }}>
+              Lanjutkan dari storefront yang sudah ada?
+            </h3>
+            <p style={{ margin: "8px 0 0", fontSize: 13.5, color: "var(--hi-muted)", lineHeight: 1.55 }}>
+              Toko ini sudah memiliki halaman aktif di{" "}
+              <code style={{ fontFamily: "var(--hi-mono)", fontSize: 12, color: "var(--hi-ink)" }}>
+                {existing.customStoreUri ?? `/${existing.alias}`}
+              </code>
+              . Pilih edit untuk membuka versi yang sudah ada, atau mulai dari template baru.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Tutup"
+            style={{
+              flex: "none",
+              marginLeft: 12,
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              border: "1px solid var(--hi-line)",
+              background: "var(--hi-paper)",
+              color: "var(--hi-muted)",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <StorefrontMobilePreview alias={existing.alias} />
+
+        {existing.publishedAt ? (
+          <div
+            style={{
+              marginTop: 10,
+              fontFamily: "var(--hi-mono)",
+              fontSize: 10,
+              letterSpacing: "0.06em",
+              color: "var(--hi-muted)",
+              textAlign: "center",
+            }}
+          >
+            Terakhir dipublish: {new Date(existing.publishedAt).toLocaleString()}
+          </div>
+        ) : null}
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18, flexWrap: "wrap" }}>
+          <button
+            onClick={onCreateNew}
+            style={{
+              padding: "11px 18px",
+              borderRadius: 12,
+              border: "1px solid var(--hi-line)",
+              background: "var(--hi-paper)",
+              color: "var(--hi-ink)",
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Buat baru dari awal
+          </button>
+          <button
+            onClick={onEdit}
+            style={{
+              padding: "11px 18px",
+              borderRadius: 12,
+              border: "none",
+              background: "var(--accent)",
+              color: "var(--accent-on)",
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            Edit storefront yang ada →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

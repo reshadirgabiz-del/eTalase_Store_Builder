@@ -26,7 +26,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import splashImage from "../../assets/splash.png";
 import etalaseLogo from "../../assets/logo.png";
@@ -226,6 +226,7 @@ function normalizeFontOption(value: string | undefined, fallback: string) {
 
 export function BuilderWorkspace() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [storeId, setStoreId] = useState("");
   const [publicStoreKey, setPublicStoreKey] = useState("");
   const [draftStoreId, setDraftStoreId] = useState("");
@@ -471,9 +472,7 @@ export function BuilderWorkspace() {
     }
   }
 
-  function loadExistingPublication() {
-    if (!existingPublication) return;
-    const next = existingPublication;
+  function applyExistingPublication(next: NonNullable<typeof existingPublication>) {
     setSelectedTemplate(next.templateId);
     if (next.theme) {
       setScheme(next.theme);
@@ -491,10 +490,51 @@ export function BuilderWorkspace() {
     if (next.customStoreUri) {
       setPublishedUrl(next.customStoreUri);
     }
-    setExistingModalOpen(false);
     setPreviewMode(false);
     setScreen("editor");
   }
+
+  function loadExistingPublication() {
+    if (!existingPublication) return;
+    applyExistingPublication(existingPublication);
+    setExistingModalOpen(false);
+  }
+
+  useEffect(() => {
+    if (!hasHydrated || !storeId) return;
+    if (searchParams?.get("loadExisting") !== "1") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const params = new URLSearchParams({ byStoreId: storeId });
+        const response = await fetch(`/api/stores/custom-uri?${params.toString()}`);
+        const json = await response.json().catch(() => ({}));
+        if (cancelled || !response.ok || !json?.exists) return;
+        applyExistingPublication({
+          alias: json.alias,
+          templateId: (json.templateId ?? "classic") as TemplateId,
+          theme: (json.theme ?? null) as ColorScheme | null,
+          texts: (json.texts ?? null) as Partial<TextConfig> | null,
+          hidden: (json.hidden ?? null) as Partial<HiddenConfig> | null,
+          config: (json.config ?? null) as
+            | { productTextOverrides?: ProductTextOverrides; heroImageOverride?: string | null }
+            | null,
+          customStoreUri: json.customStoreUri ?? null,
+          publishedAt: json.publishedAt ?? null,
+        });
+      } catch {
+        // non-blocking
+      } finally {
+        if (!cancelled) {
+          router.replace("/templates");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasHydrated, storeId, searchParams]);
 
   function startBlankBuild() {
     setExistingModalOpen(false);
@@ -721,7 +761,7 @@ export function BuilderWorkspace() {
         opened={existingModalOpen}
         onClose={startBlankBuild}
         centered
-        size="md"
+        size="lg"
         radius="lg"
         title={
           <Group gap="sm" wrap="nowrap" align="center">
@@ -741,8 +781,11 @@ export function BuilderWorkspace() {
             ) : null}
             . Anda dapat melanjutkan edit versi yang ada atau memulai dari template baru.
           </Text>
+          {existingPublication?.alias ? (
+            <StorefrontMobilePreview alias={existingPublication.alias} />
+          ) : null}
           {existingPublication?.publishedAt ? (
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="dimmed" ta="center">
               Terakhir dipublish: {new Date(existingPublication.publishedAt).toLocaleString()}
             </Text>
           ) : null}
@@ -1320,6 +1363,90 @@ export function BuilderWorkspace() {
         </Stack>
       </Modal>
     </main>
+  );
+}
+
+export function StorefrontMobilePreview({ alias }: { alias: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const src = `/${encodeURIComponent(alias)}`;
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        background: "linear-gradient(180deg, #f4f4f7 0%, #e8e8ee 100%)",
+        borderRadius: 18,
+        padding: "20px 0",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: 280,
+          height: 520,
+          borderRadius: 32,
+          background: "#0a0a0a",
+          padding: 10,
+          boxShadow: "0 18px 40px -18px rgba(15,15,20,0.4), 0 4px 12px -6px rgba(15,15,20,0.25)",
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: 14,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 80,
+            height: 6,
+            borderRadius: 4,
+            background: "#1f1f24",
+            zIndex: 2,
+          }}
+        />
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: 24,
+            overflow: "hidden",
+            background: "#ffffff",
+            position: "relative",
+          }}
+        >
+          <iframe
+            src={src}
+            title={`Preview ${alias}`}
+            onLoad={() => setLoaded(true)}
+            style={{
+              width: 390,
+              height: "calc(500px / 0.64)",
+              border: 0,
+              transform: "scale(0.64)",
+              transformOrigin: "top left",
+              display: "block",
+              opacity: loaded ? 1 : 0,
+              transition: "opacity 0.25s ease",
+            }}
+          />
+          {!loaded ? (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#6e6e76",
+                fontSize: 12,
+              }}
+            >
+              <Loader size="sm" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 
