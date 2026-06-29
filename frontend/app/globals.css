@@ -3121,6 +3121,38 @@ textarea {
   box-shadow: 0 28px 90px rgba(45, 36, 32, 0.2);
 }
 
+.pastel-opening.has-hero-bg {
+  overflow: hidden;
+  background-color: var(--background);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pastel-opening-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 16, 14, 0.18) 0%,
+    rgba(20, 16, 14, 0.42) 55%,
+    rgba(20, 16, 14, 0.72) 100%
+  );
+  pointer-events: none;
+}
+
+.pastel-opening.has-hero-bg .pastel-hero-copy,
+.pastel-opening.has-hero-bg .pastel-hero-copy h1,
+.pastel-opening.has-hero-bg .pastel-hero-copy p,
+.pastel-opening.has-hero-bg .pastel-hero-copy .pastel-kicker {
+  color: #fff;
+}
+
+.pastel-opening.has-hero-bg .pastel-hero-copy .pastel-kicker {
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .pastel-opening-copy-zone {
   position: relative;
   z-index: 2;
@@ -3723,21 +3755,25 @@ textarea {
   }
 
   .pastel-modal {
-    padding: 12px;
+    padding: 40px 14px;
   }
 
   .pastel-opening {
-    width: calc(100vw - 24px);
-    min-height: calc(100vh - 24px);
-    max-height: calc(100vh - 24px);
+    width: calc(100vw - 28px);
+    min-height: calc(100vh - 80px);
+    max-height: calc(100vh - 80px);
     overflow: visible;
     border-radius: 22px;
-    padding: 74px 16px 22px;
+    padding: 74px 16px 28px;
+  }
+
+  .pastel-opening.has-hero-bg {
+    overflow: hidden;
   }
 
   .pastel-opening-copy-zone {
-    min-height: calc((100vh - 24px) * 0.8);
-    padding-bottom: calc((100vh - 24px) * 0.2);
+    min-height: calc((100vh - 80px) * 0.8);
+    padding-bottom: calc((100vh - 80px) * 0.2);
   }
 
   .pastel-opening .pastel-fan {

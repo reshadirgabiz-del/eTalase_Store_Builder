@@ -130,6 +130,7 @@ export function ArtisanTemplate({
   const [productQuantity, setProductQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const [heroModalOpen, setHeroModalOpen] = useState(() => !hidden.hero);
 
   const filteredProducts = selectedCategory
     ? products.filter((p) => (p.tags ?? []).includes(selectedCategory))
@@ -166,6 +167,7 @@ export function ArtisanTemplate({
     setCartOpen(true);
   }
   function goCatalogue(category?: string | null) {
+    setHeroModalOpen(false);
     setSelectedCategory(category ?? null);
     onNavigate("catalogue");
   }
@@ -402,6 +404,226 @@ export function ArtisanTemplate({
         }
         storeId={storeId}
       />
+
+      {page === "home" && !hidden.hero && heroModalOpen ? (
+        <ArtisanOpeningModal
+          texts={texts}
+          heroImageOverride={heroImageOverride}
+          fallbackImage={heroImage}
+          isTextEditMode={isTextEditMode}
+          badgeEditable={badgeEditable || editable}
+          edition={edition}
+          storeName={storeName}
+          onClose={() => setHeroModalOpen(false)}
+          onCta={() => goCatalogue(null)}
+          onUpdateText={onUpdateText}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function ArtisanOpeningModal({
+  texts,
+  heroImageOverride,
+  fallbackImage,
+  isTextEditMode,
+  badgeEditable,
+  edition,
+  storeName,
+  onClose,
+  onCta,
+  onUpdateText,
+}: {
+  texts: TextConfig;
+  heroImageOverride: string | null;
+  fallbackImage: string;
+  isTextEditMode: boolean;
+  badgeEditable: boolean;
+  edition: number;
+  storeName: string;
+  onClose: () => void;
+  onCta: () => void;
+  onUpdateText: (id: SectionId, field: TextField, v: string) => void;
+}) {
+  const hasHeroBackground = Boolean(heroImageOverride);
+  const openingStyle: CSSProperties = hasHeroBackground
+    ? { backgroundImage: `url(${heroImageOverride})` }
+    : { ...paperBg };
+  return (
+    <div className="pastel-modal is-artisan" role="dialog" aria-modal="true" aria-label="Opening highlight">
+      <button className="pastel-modal-scrim" type="button" aria-label="Close opening modal" onClick={onClose} />
+      <motion.section
+        className={`pastel-opening is-artisan${hasHeroBackground ? " has-hero-bg" : ""}`}
+        style={openingStyle}
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.38, ease: "easeOut" }}
+      >
+        {hasHeroBackground ? <span className="pastel-opening-overlay" aria-hidden="true" /> : null}
+        <button className="pastel-modal-close" type="button" aria-label="Close opening modal" onClick={onClose}>
+          <X size={18} />
+        </button>
+        <span
+          className="artisan-opening-stamp"
+          style={{
+            position: "absolute",
+            top: 22,
+            left: 22,
+            zIndex: 2,
+            fontFamily: "var(--font-heading)",
+            fontSize: 11,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: hasHeroBackground ? "#fff" : "var(--c-brand-strong)",
+            border: `1px solid ${hasHeroBackground ? "rgba(255,255,255,0.55)" : "color-mix(in oklab, var(--c-brand) 55%, transparent)"}`,
+            padding: "4px 10px",
+            borderRadius: 6,
+            background: hasHeroBackground ? "rgba(0,0,0,0.18)" : "transparent",
+          }}
+        >
+          Edisi {ordinal(edition % 1000)}
+        </span>
+        <div
+          className="pastel-opening-copy-zone"
+          style={{
+            placeItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <div
+            className="pastel-hero-copy"
+            style={{
+              maxWidth: 560,
+              color: hasHeroBackground ? "#fff" : "var(--c-ink)",
+              fontFamily: "var(--font-body)",
+              display: "grid",
+              gap: 18,
+              justifyItems: "center",
+            }}
+          >
+            <span
+              style={{
+                ...stampBase,
+                color: hasHeroBackground ? "#fff" : "var(--c-brand-strong)",
+                background: hasHeroBackground ? "rgba(0,0,0,0.22)" : "color-mix(in oklab, var(--c-accent) 12%, white)",
+                borderColor: hasHeroBackground ? "rgba(255,255,255,0.55)" : "color-mix(in oklab, var(--c-brand) 55%, transparent)",
+              }}
+            >
+              <EditableText
+                value={texts.hero.eyebrow || INITIAL_TEXT.hero.eyebrow || "Handcrafted"}
+                editable={badgeEditable || isTextEditMode}
+                onChange={(v) => onUpdateText("hero", "eyebrow", v)}
+              />
+            </span>
+            <EditableText
+              as="h1"
+              value={texts.hero.title || storeName}
+              editable={isTextEditMode}
+              onChange={(v) => onUpdateText("hero", "title", v)}
+              style={{
+                margin: 0,
+                fontFamily: "var(--font-heading)",
+                fontStyle: "italic",
+                fontSize: "clamp(36px, 6vw, 64px)",
+                lineHeight: 1.04,
+                letterSpacing: "-0.01em",
+                color: "inherit",
+              }}
+            />
+            <EditableText
+              as="p"
+              value={texts.hero.body}
+              editable={isTextEditMode}
+              onChange={(v) => onUpdateText("hero", "body", v)}
+              multiline
+              style={{
+                margin: 0,
+                fontSize: 16,
+                lineHeight: 1.6,
+                color: hasHeroBackground ? "rgba(255,255,255,0.86)" : "var(--c-muted)",
+              }}
+            />
+            <button
+              type="button"
+              onClick={onCta}
+              style={{
+                marginTop: 8,
+                padding: "14px 26px",
+                background: hasHeroBackground ? "#fff" : "var(--c-brand)",
+                color: hasHeroBackground ? "var(--c-ink)" : "var(--c-button-text)",
+                border: "1px solid color-mix(in oklab, var(--c-brand-strong) 60%, transparent)",
+                fontFamily: "var(--font-heading)",
+                fontSize: 13,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                borderRadius: 4,
+              }}
+            >
+              <EditableText
+                value={texts.hero.ctaLabel || INITIAL_TEXT.hero.ctaLabel || "Lihat katalog"}
+                editable={isTextEditMode}
+                onChange={(v) => onUpdateText("hero", "ctaLabel", v)}
+              />
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+        {hasHeroBackground ? null : (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              bottom: 28,
+              right: 28,
+              width: 96,
+              height: 96,
+              borderRadius: 999,
+              background: "var(--c-accent)",
+              color: "var(--c-ink)",
+              display: "grid",
+              placeItems: "center",
+              fontFamily: "var(--font-heading)",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              transform: "rotate(-12deg)",
+              border: "2px solid var(--c-ink)",
+              lineHeight: 1.05,
+              textAlign: "center",
+              padding: 8,
+              zIndex: 1,
+            }}
+          >
+            Made by hand
+          </span>
+        )}
+        {!hasHeroBackground && fallbackImage ? (
+          <img
+            src={fallbackImage}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: 28,
+              bottom: 28,
+              width: "min(220px, 28%)",
+              aspectRatio: "4/5",
+              objectFit: "cover",
+              borderRadius: 4,
+              transform: "rotate(-2.2deg)",
+              border: "1px solid color-mix(in oklab, var(--c-ink) 14%, transparent)",
+              boxShadow: "0 14px 28px -16px rgba(46, 31, 18, 0.6)",
+              zIndex: 1,
+            }}
+          />
+        ) : null}
+      </motion.section>
     </div>
   );
 }

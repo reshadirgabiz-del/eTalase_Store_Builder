@@ -51,6 +51,7 @@ type Props = {
   page: PreviewPage;
   onNavigate: (page: PreviewPage) => void;
   badgeEditable?: boolean;
+  heroImageOverride?: string | null;
   variant?: "default" | "bauhaus" | "mosaic";
 };
 
@@ -296,6 +297,7 @@ export function PastelTemplate({
   page,
   onNavigate,
   badgeEditable = false,
+  heroImageOverride = null,
   variant = "default",
 }: Props) {
   const variantClass =
@@ -426,10 +428,17 @@ export function PastelTemplate({
     </footer>
   ) : null;
 
+  const hasHeroBackground = Boolean(heroImageOverride);
+  const openingClassName = `pastel-opening${hasHeroBackground ? " has-hero-bg" : ""}`;
+  const openingStyle: CSSProperties | undefined = hasHeroBackground
+    ? { backgroundImage: `url(${heroImageOverride})` }
+    : undefined;
+
   const openingModal = !hidden.hero && heroModalOpen ? (
     <div className={`pastel-modal ${variantClass}`} role="dialog" aria-modal="true" aria-label="Opening highlight">
       <button className="pastel-modal-scrim" type="button" aria-label="Close opening modal" onClick={() => setHeroModalOpen(false)} />
-      <motion.section className="pastel-opening" initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.38, ease: "easeOut" }}>
+      <motion.section className={openingClassName} style={openingStyle} initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.38, ease: "easeOut" }}>
+        {hasHeroBackground ? <span className="pastel-opening-overlay" aria-hidden="true" /> : null}
         <button className="pastel-modal-close" type="button" aria-label="Close opening modal" onClick={() => setHeroModalOpen(false)}>
           <X size={18} />
         </button>
@@ -469,7 +478,9 @@ export function PastelTemplate({
             </button>
           </div>
         </div>
-        <FanGallery products={featured} productText={productText} onProduct={goProduct} />
+        {hasHeroBackground ? null : (
+          <FanGallery products={featured} productText={productText} onProduct={goProduct} />
+        )}
       </motion.section>
     </div>
   ) : null;

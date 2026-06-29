@@ -774,6 +774,9 @@ export const TEMPLATES_WITH_STATIC_HERO: TemplateId[] = [
   "brutalist",
   "glass",
   "artisan",
+  "pastel",
+  "pastel-bauhaus",
+  "mosaic",
 ];
 
 export function templateSupportsHeroImage(templateId: TemplateId | undefined) {
@@ -1117,6 +1120,7 @@ export function StorefrontPreview({
         page={page}
         onNavigate={onNavigate}
         badgeEditable={badgeEditable}
+        heroImageOverride={heroImageOverride}
         variant={
           templateId === "pastel-bauhaus"
             ? "bauhaus"
