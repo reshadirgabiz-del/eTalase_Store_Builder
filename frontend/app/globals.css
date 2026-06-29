@@ -1018,7 +1018,7 @@ textarea {
 
 .place-image {
   position: relative;
-  height: 240px;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-radius: 14px;
   background: #ffffff;
@@ -1027,8 +1027,7 @@ textarea {
 .place-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 6px;
+  object-fit: cover;
   display: block;
 }
 
@@ -3094,7 +3093,7 @@ textarea {
   z-index: 70;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 2rem 1rem;
 }
 
 .pastel-modal-scrim {
@@ -3110,9 +3109,9 @@ textarea {
   position: relative;
   z-index: 1;
   display: block;
-  width: min(1060px, calc(100vw - 48px));
-  min-height: min(760px, calc(100vh - 48px));
-  max-height: min(760px, calc(100vh - 48px));
+  width: min(1060px, calc(100vw - 2rem));
+  min-height: min(760px, calc(100vh - 4rem));
+  max-height: min(760px, calc(100vh - 4rem));
   overflow: visible;
   border: 1px solid var(--border);
   border-radius: 28px;
@@ -3124,8 +3123,8 @@ textarea {
 .pastel-opening.has-hero-bg {
   overflow: hidden;
   background-color: var(--background);
-  background-size: cover;
-  background-position: center;
+  background-size: 100% auto;
+  background-position: center center;
   background-repeat: no-repeat;
 }
 
@@ -3158,8 +3157,8 @@ textarea {
   z-index: 2;
   display: grid;
   place-items: center;
-  min-height: calc(min(760px, calc(100vh - 48px)) * 0.8);
-  padding-bottom: calc(min(760px, calc(100vh - 48px)) * 0.2);
+  min-height: calc(min(760px, calc(100vh - 4rem)) * 0.8);
+  padding-bottom: calc(min(760px, calc(100vh - 4rem)) * 0.2);
   pointer-events: none;
 }
 
@@ -3755,13 +3754,13 @@ textarea {
   }
 
   .pastel-modal {
-    padding: 40px 14px;
+    padding: 2rem 1rem;
   }
 
   .pastel-opening {
-    width: calc(100vw - 28px);
-    min-height: calc(100vh - 80px);
-    max-height: calc(100vh - 80px);
+    width: calc(100vw - 2rem);
+    min-height: calc(100vh - 4rem);
+    max-height: calc(100vh - 4rem);
     overflow: visible;
     border-radius: 22px;
     padding: 74px 16px 28px;
@@ -3772,8 +3771,8 @@ textarea {
   }
 
   .pastel-opening-copy-zone {
-    min-height: calc((100vh - 80px) * 0.8);
-    padding-bottom: calc((100vh - 80px) * 0.2);
+    min-height: calc((100vh - 4rem) * 0.8);
+    padding-bottom: calc((100vh - 4rem) * 0.2);
   }
 
   .pastel-opening .pastel-fan {
@@ -3920,9 +3919,13 @@ textarea {
   }
 
   .catalogue-grid,
-  .category-grid,
-  .product-card-grid {
+  .category-grid {
     grid-template-columns: 1fr;
+  }
+
+  .product-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .storefront-header .store-nav {
@@ -6161,7 +6164,7 @@ textarea {
 
 .pastel-store.is-mosaic .pastel-product-grid,
 .pastel-modal.is-mosaic .pastel-product-grid {
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, calc(50% - 7px)), 1fr));
   gap: 14px;
 }
 
@@ -7784,7 +7787,8 @@ textarea {
 
 @media (max-width: 560px) {
   .editorial-product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
   }
   .editorial-header-row.top {
     grid-template-columns: 1fr 1fr;
@@ -8937,9 +8941,12 @@ textarea {
 }
 
 @media (max-width: 560px) {
-  .brutal-category-grid,
-  .brutal-product-grid {
+  .brutal-category-grid {
     grid-template-columns: 1fr;
+  }
+  .brutal-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
   .brutal-logo strong {
     font-size: 18px;

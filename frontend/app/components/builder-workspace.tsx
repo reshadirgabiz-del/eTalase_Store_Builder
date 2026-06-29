@@ -598,9 +598,9 @@ export function BuilderWorkspace() {
       setHeroImageError("File harus berupa gambar.");
       return;
     }
-    const maxBytes = 5 * 1024 * 1024;
+    const maxBytes = 500 * 1024;
     if (file.size > maxBytes) {
-      setHeroImageError("Ukuran gambar maksimum 5 MB.");
+      setHeroImageError("Ukuran gambar maksimum 500 KB.");
       return;
     }
     const reader = new FileReader();
@@ -1102,7 +1102,7 @@ export function BuilderWorkspace() {
                             {templateSupportsHeroImage(template.id)
                               ? heroImageOverride
                                 ? "Gambar hero akan diganti dengan unggahan ini saat preview dan publish."
-                                : "Gambar hero saat ini diambil dari produk pertama. Maks. 5 MB."
+                                : "Gambar hero saat ini diambil dari produk pertama. Maks. 500 KB."
                               : "Template ini tidak memakai gambar hero statis, jadi unggahan dinonaktifkan."}
                           </Text>
                         )}

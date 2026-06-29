@@ -582,7 +582,7 @@ function HomeView({
               <EditableText value={texts.catalogue.viewAllLabel || ""} editable={editable && !isTextEditMode} onChange={(v) => onUpdateText("catalogue", "viewAllLabel", v)} /> →
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 18, marginTop: 22 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, calc(50% - 9px)), 1fr))", gap: 18, marginTop: 22 }}>
             {showcase.map((p) => (
               <ProductCard
                 key={p.id}
@@ -721,7 +721,7 @@ function CatalogueView({
           </button>
         ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 18, marginTop: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, calc(50% - 9px)), 1fr))", gap: 18, marginTop: 24 }}>
         {products.map((p) => (
           <ProductCard
             key={p.id}
