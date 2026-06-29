@@ -430,14 +430,12 @@ export function PastelTemplate({
 
   const hasHeroBackground = Boolean(heroImageOverride);
   const openingClassName = `pastel-opening${hasHeroBackground ? " has-hero-bg" : ""}`;
-  const openingStyle: CSSProperties | undefined = hasHeroBackground
-    ? { backgroundImage: `url(${heroImageOverride})` }
-    : undefined;
 
   const openingModal = !hidden.hero && heroModalOpen ? (
     <div className={`pastel-modal ${variantClass}`} role="dialog" aria-modal="true" aria-label="Opening highlight">
       <button className="pastel-modal-scrim" type="button" aria-label="Close opening modal" onClick={() => setHeroModalOpen(false)} />
-      <motion.section className={openingClassName} style={openingStyle} initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.38, ease: "easeOut" }}>
+      <motion.section className={openingClassName} initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.38, ease: "easeOut" }}>
+        {hasHeroBackground ? <img className="pastel-opening-bg-image" src={heroImageOverride ?? undefined} alt="" /> : null}
         {hasHeroBackground ? <span className="pastel-opening-overlay" aria-hidden="true" /> : null}
         <button className="pastel-modal-close" type="button" aria-label="Close opening modal" onClick={() => setHeroModalOpen(false)}>
           <X size={18} />

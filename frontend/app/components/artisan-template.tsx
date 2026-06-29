@@ -447,19 +447,17 @@ function ArtisanOpeningModal({
   onUpdateText: (id: SectionId, field: TextField, v: string) => void;
 }) {
   const hasHeroBackground = Boolean(heroImageOverride);
-  const openingStyle: CSSProperties = hasHeroBackground
-    ? { backgroundImage: `url(${heroImageOverride})` }
-    : { ...paperBg };
   return (
     <div className="pastel-modal is-artisan" role="dialog" aria-modal="true" aria-label="Opening highlight">
       <button className="pastel-modal-scrim" type="button" aria-label="Close opening modal" onClick={onClose} />
       <motion.section
         className={`pastel-opening is-artisan${hasHeroBackground ? " has-hero-bg" : ""}`}
-        style={openingStyle}
+        style={hasHeroBackground ? undefined : { ...paperBg }}
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.38, ease: "easeOut" }}
       >
+        {hasHeroBackground ? <img className="pastel-opening-bg-image" src={heroImageOverride ?? undefined} alt="" /> : null}
         {hasHeroBackground ? <span className="pastel-opening-overlay" aria-hidden="true" /> : null}
         <button className="pastel-modal-close" type="button" aria-label="Close opening modal" onClick={onClose}>
           <X size={18} />
