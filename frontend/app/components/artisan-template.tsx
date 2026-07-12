@@ -932,7 +932,7 @@ function ProductCard({
           <span style={{ fontFamily: "var(--font-heading)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--c-brand)" }}>№ {ordinal(index + 1)}</span>
           <span style={{ fontFamily: "var(--font-heading)", fontWeight: 600, fontSize: 14, color: "var(--c-brand-strong)" }}>{formatPrice(price, currency)}</span>
         </div>
-        <div style={{ fontFamily: "var(--font-heading)", fontSize: 17, lineHeight: 1.2, fontStyle: "italic", marginTop: 4 }}>{name}</div>
+        <div style={{ fontFamily: "var(--font-heading)", fontSize: 17, lineHeight: 1.2, fontStyle: "italic", marginTop: 4, overflow: "hidden", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2 }}>{name}</div>
         <button
           type="button"
           onClick={(e) => {

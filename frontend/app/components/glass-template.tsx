@@ -626,7 +626,7 @@ function ProductCard({
         <img src={image} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
       <div style={{ padding: "0 4px" }}>
-        <div style={{ fontFamily: "var(--font-heading)", fontSize: 15, lineHeight: 1.2 }}>{name}</div>
+        <div style={{ fontFamily: "var(--font-heading)", fontSize: 15, lineHeight: 1.2, overflow: "hidden", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2 }}>{name}</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
           <span style={{ color: "var(--c-brand-strong)", fontWeight: 700, fontSize: 14 }}>{formatPrice(price, currency)}</span>
           <button
